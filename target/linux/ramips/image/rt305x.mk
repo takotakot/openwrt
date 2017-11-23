@@ -637,6 +637,16 @@ define Device/intenso_memory2move
 endef
 TARGET_DEVICES += intenso_memory2move
 
+define Device/iodata_wn-g300dgr
+  SOC := rt3052
+  BLOCKSIZE := 64k
+  IMAGE_SIZE := 3456k
+  DEVICE_VENDOR := I-O DATA
+  DEVICE_MODEL := WN-G300DGR
+  DEVICE_PACKAGES := kmod-switch-rtl8366rb kmod-usb-core kmod-usb-dwc2
+endef
+TARGET_DEVICES += iodata_wn-g300dgr
+
 define Device/jcg_jhr-n805r
   SOC := rt3050
   IMAGE_SIZE := 3776k

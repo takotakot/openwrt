@@ -141,6 +141,10 @@ ramips_setup_interfaces()
 		ucidef_add_switch "switch0" \
 			"1:lan:4" "2:lan:3" "3:lan:2" "4:lan:1" "0:wan" "6@eth0"
 		;;
+	iodata,wn-g300dgr)
+		ucidef_add_switch "switch0" \
+			"0:lan" "1:lan" "2:lan" "3:wan" "5@eth0"
+		;;
 	nexx,wt1520-4m|\
 	nexx,wt1520-8m)
 		ucidef_add_switch "switch0" \
@@ -269,6 +273,9 @@ ramips_setup_macs()
 	jcg,jhr-n825r|\
 	jcg,jhr-n926r)
 		wan_mac=$(macaddr_add "$(mtd_get_mac_binary factory 0x2e)" 1)
+		;;
+	iodata,wn-g300dgr)
+		wan_mac=$(mtd_get_mac_ascii u-boot-env wanaddr)
 		;;
 	poray,m3|\
 	poray,m4-4m|\
