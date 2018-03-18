@@ -1,3 +1,20 @@
+This branch (musashino) is a customized branch by musashino205
+
+## Compiled firmware
+[taiha.net/jenkins](https://taiha.net/jenkins/)
+
+## Author
+
+musashino_205
+
+GitHub: [musashino205](https://github.com/musashino205)
+
+Twitter: [@musashino_205](https://twitter.com/musashino_205/)
+
+Mastodon: [@musashino205@mstdn.maud.io](https://mstdn.maud.io/@musashino205)
+
+---
+
 ![OpenWrt logo](/logo.svg)
 
 OpenWrt Project is a Linux operating system targeting embedded devices. Instead
