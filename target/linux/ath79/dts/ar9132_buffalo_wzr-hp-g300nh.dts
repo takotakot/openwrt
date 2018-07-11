@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0
+/dts-v1/;
+
+#include "ar9132_buffalo_wzr-hp-g30xnh.dtsi"
+
+/ {
+	compatible = "buffalo,wzr-hp-g300nh", "qca,ar9132";
+	model = "Buffalo WZR-HP-G300NH";
+};
+
+&rtl8366 {
+	compatible = "realtek,rtl8366s";
+};
+
+&eth0 {
+	pll-data = <0x1e000100 0x13000a44 0x00441099>;
+};
+
+&eth1 {
+	pll-data = <0x1e000100 0x13000a44 0x00441099>;
+};

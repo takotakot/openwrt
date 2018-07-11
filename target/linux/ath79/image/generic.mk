@@ -268,6 +268,46 @@ define Device/buffalo_wzr-hp-g302h-a1a0
 endef
 TARGET_DEVICES += buffalo_wzr-hp-g302h-a1a0
 
+define Device/buffalo_wzr-hp-g300nh
+  SOC := ar9132
+  DEVICE_VENDOR := Buffalo
+  DEVICE_MODEL := WZR-HP-G300NH
+  DEVICE_VARIANT := A0A1/A0D0/B0B0/B0C0
+  BLOCKSIZE := 128k
+  IMAGE_SIZE := 32128k
+  IMAGES += factory.bin tftp.bin
+  IMAGE/default := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | \
+	pad-rootfs | check-size
+  IMAGE/sysupgrade.bin := $$(IMAGE/default) | append-metadata
+  IMAGE/factory.bin := $$(IMAGE/default) | buffalo-enc WZR-HP-G300NH 1.99 | \
+	buffalo-tag WZR-HP-G300NH 3
+  IMAGE/tftp.bin := $$(IMAGE/default) | buffalo-tftp-header
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport
+  SUPPORTED_DEVICES += wzr-hp-g300nh
+endef
+TARGET_DEVICES += buffalo_wzr-hp-g300nh
+
+define Device/buffalo_wzr-hp-g301nh
+  SOC := ar9132
+  DEVICE_VENDOR := Buffalo
+  DEVICE_MODEL := WZR-HP-G301NH
+  DEVICE_ALT0_VENDOR := Buffalo
+  DEVICE_ALT0_MODEL := WZR-HP-G300NH
+  DEVICE_ALT0_VARIANT := A0F0
+  BLOCKSIZE := 128k
+  IMAGE_SIZE := 32128k
+  IMAGES += factory.bin tftp.bin
+  IMAGE/default := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | \
+	pad-rootfs | check-size
+  IMAGE/sysupgrade.bin := $$(IMAGE/default) | append-metadata
+  IMAGE/factory.bin := $$(IMAGE/default) | buffalo-enc WZR-HP-G300NH 1.99 | \
+	buffalo-tag WZR-HP-G300NH 3
+  IMAGE/tftp.bin := $$(IMAGE/default) | buffalo-tftp-header
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ledtrig-usbport
+  SUPPORTED_DEVICES += wzr-hp-g300nh
+endef
+TARGET_DEVICES += buffalo_wzr-hp-g301nh
+
 define Device/buffalo_wzr-hp-g450h
   SOC := ar7242
   DEVICE_VENDOR := Buffalo

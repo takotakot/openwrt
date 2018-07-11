@@ -195,3 +195,15 @@
 	reset-names = "mac";
 	qca,mac-idx = <0>;
 };
+
+&eth1 {
+	compatible = "qca,ar9130-eth", "syscon";
+	reg = <0x1a000000 0x200
+		0x18070004 0x4>;
+	pll-data = <0x1a000000 0x13000a44 0x00441099>;
+	pll-reg = <0x4 0x18 22>;
+	pll-handle = <&pll>;
+	resets = <&rst 13>;
+	reset-names = "mac";
+	qca,mac-idx = <1>;
+};
