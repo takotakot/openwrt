@@ -158,6 +158,10 @@ dlink,dwr-922-e2)
 dir-860l-b1)
 	ucidef_set_led_netdev "wan" "wan" "$boardname:green:net" "eth0.2"
 	;;
+elecom,wrc-733ghbk)
+	ucidef_set_led_wlan "wlan2g" "wlan2g" "$boardname:blue:wlan2g" "phy1radio"
+	ucidef_set_led_wlan "wlan5g" "wlan5g" "$boardname:blue:wlan5g" "phy0radio"
+	;;
 ex2700|\
 wn3000rpv3)
 	set_wifi_led "$boardname:green:router"

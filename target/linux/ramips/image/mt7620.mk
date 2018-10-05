@@ -275,6 +275,17 @@ define Device/e1700
 endef
 TARGET_DEVICES += e1700
 
+define Device/elecom_wrc-733ghbk
+  DTS := WRC-733GHBK
+  DEVICE_TITLE := ELECOM WRC-733GHBK
+  IMAGE_SIZE := 7680k
+  IMAGE/sysupgrade.bin := append-kernel | append-rootfs | \
+    edimax-header -s CSYS -m RN62 -f 0x70000 -S 0x01100000 | pad-rootfs | \
+    append-metadata | check-size $$$$(IMAGE_SIZE)
+  DEVICE_PACKAGES := kmod-mt76x0e kmod-switch-rtl8366-smi kmod-switch-rtl8367b
+endef
+TARGET_DEVICES += elecom_wrc-733ghbk
+
 define Device/ex2700
   NETGEAR_HW_ID := 29764623+4+0+32+2x2+0
   NETGEAR_BOARD_ID := EX2700
