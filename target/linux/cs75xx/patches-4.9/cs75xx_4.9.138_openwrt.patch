@@ -1,0 +1,750 @@
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 7f69418bf02c..33f05f6966ee 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -851,6 +851,8 @@ source "arch/arm/mach-zx/Kconfig"
+ 
+ source "arch/arm/mach-zynq/Kconfig"
+ 
++source "arch/arm/mach-goldengate/Kconfig"
++
+ # ARMv7-M architecture
+ config ARCH_EFM32
+ 	bool "Energy Micro efm32"
+diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
+index d83f7c369e51..23eb4f6963a6 100644
+--- a/arch/arm/Kconfig.debug
++++ b/arch/arm/Kconfig.debug
+@@ -1246,6 +1246,13 @@ choice
+ 		  If you have a ZC702 board and want early boot messages to
+ 		  appear on the USB serial adaptor, select this option.
+ 
++	config DEBUG_GOLDENGATE_UART0
++		bool "Kernel low-level debugging on Cortina CS75xx using UART0"
++		depends on ARCH_GOLDENGATE
++		help
++		  Say Y here if you want the debug print routines to direct
++		  their output to UART0 on the Cortina CS75xx platform.
++
+ 	config DEBUG_ICEDCC
+ 		bool "Kernel low-level debugging via EmbeddedICE DCC channel"
+ 		help
+@@ -1432,6 +1439,7 @@ config DEBUG_LL_INCLUDE
+ 	default "debug/bcm63xx.S" if DEBUG_BCM63XX_UART
+ 	default "debug/digicolor.S" if DEBUG_DIGICOLOR_UA0
+ 	default "debug/brcmstb.S" if DEBUG_BRCMSTB_UART
++	default "debug/goldengate.S" if DEBUG_GOLDENGATE_UART0
+ 	default "mach/debug-macro.S"
+ 
+ # Compatibility options for PL01x
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index 6be9ee148b78..e180dd4a7296 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -222,6 +222,7 @@ machine-$(CONFIG_ARCH_W90X900)		+= w90x900
+ machine-$(CONFIG_ARCH_ZX)		+= zx
+ machine-$(CONFIG_ARCH_ZYNQ)		+= zynq
+ machine-$(CONFIG_PLAT_SPEAR)		+= spear
++machine-$(CONFIG_ARCH_GOLDENGATE)	+= goldengate
+ 
+ # Platform directory name.  This list is sorted alphanumerically
+ # by CONFIG_* macro name.
+diff --git a/arch/arm/boot/compressed/head.S b/arch/arm/boot/compressed/head.S
+index 2d7f2bb0d66a..9c8a798560ae 100644
+--- a/arch/arm/boot/compressed/head.S
++++ b/arch/arm/boot/compressed/head.S
+@@ -683,6 +683,51 @@ __armv3_mpu_cache_on:
+ #define CB_BITS 0x0c
+ #endif
+ 
++#ifdef CONFIG_ARCH_GOLDENGATE
++__setup_mmu:	sub	r3, r4, #16384		@ Page directory size
++		bic	r3, r3, #0xff		@ Align the pointer
++		bic	r3, r3, #0x3f00
++/*
++ * Initialise the page tables, turning on the cacheable and bufferable
++ * bits for the RAM area only.
++ */
++		mov	r0, r3
++		mov	r9, r0, lsr #18
++		mov	r9, r9, lsl #18		@ start of RAM
++		add	r10, r9, #0x10000000	@ a reasonable RAM size
++		mov	r1, #0x12
++		orr	r1, r1, #3 << 10
++		add	r2, r3, #16384
++1:		cmp	r1, r9			@ if virt > start of RAM
++#ifdef CONFIG_CPU_DCACHE_WRITETHROUGH
++		orrhs	r1, r1, #0x08		@ set cacheable
++#else
++		orrhs	r1, r1, #0x0c		@ set cacheable, bufferable
++#endif
++		cmp	r1, r10			@ if virt > end of RAM
++		bichs	r1, r1, #0x0c		@ clear cacheable, bufferable
++		str	r1, [r0], #4		@ 1:1 mapping
++		add	r1, r1, #1048576
++		teq	r0, r2
++		bne	1b
++/*
++ * If ever we are running from Flash, then we surely want the cache
++ * to be enabled also for our execution instance...  We map 2MB of it
++ * so there is no map overlap problem for up to 1 MB compressed kernel.
++ * If the execution is in RAM then we would only be duplicating the above.
++ */
++		mov	r1, #0x1e
++		orr	r1, r1, #3 << 10
++		mov	r2, pc
++		mov	r2, r2, lsr #20
++		orr	r1, r1, r2, lsl #20
++		add	r0, r3, r2, lsl #2
++		str	r1, [r0], #4
++		add	r1, r1, #1048576
++		str	r1, [r0]
++		mov	pc, lr
++ENDPROC(__setup_mmu)
++#else
+ __setup_mmu:	sub	r3, r4, #16384		@ Page directory size
+ 		bic	r3, r3, #0xff		@ Align the pointer
+ 		bic	r3, r3, #0x3f00
+@@ -723,6 +768,7 @@ __setup_mmu:	sub	r3, r4, #16384		@ Page directory size
+ 		str	r1, [r0]
+ 		mov	pc, lr
+ ENDPROC(__setup_mmu)
++#endif
+ 
+ @ Enable unaligned access on v6, to allow better code generation
+ @ for the decompressor C code:
+@@ -757,6 +803,38 @@ __armv4_mmu_cache_on:
+ #endif
+ 		mov	pc, r12
+ 
++#ifdef CONFIG_ARCH_GOLDENGATE
++__armv7_mmu_cache_on:
++		mov	r12, lr
++#ifdef CONFIG_MMU
++		mrc	p15, 0, r11, c0, c1, 4	@ read ID_MMFR0
++		tst	r11, #0xf		@ VMSA
++		blne	__setup_mmu
++		mov	r0, #0
++		mcr	p15, 0, r0, c7, c10, 4	@ drain write buffer
++		tst	r11, #0xf		@ VMSA
++		mcrne	p15, 0, r0, c8, c7, 0	@ flush I,D TLBs
++#endif
++		mrc	p15, 0, r0, c1, c0, 0	@ read control reg
++		bic	r0, r0, #1 << 28	@ clear SCTLR.TRE
++		orr	r0, r0, #0x5000		@ I-cache enable, RR cache replacement
++		orr	r0, r0, #0x003c		@ write buffer
++#ifdef CONFIG_MMU
++#ifdef CONFIG_CPU_ENDIAN_BE8
++		orr	r0, r0, #1 << 25	@ big-endian page tables
++#endif
++		orrne	r0, r0, #1		@ MMU enabled
++		movne	r1, #-1
++		mcrne	p15, 0, r3, c2, c0, 0	@ load page table pointer
++		mcrne	p15, 0, r1, c3, c0, 0	@ load domain access control
++#endif
++		mcr	p15, 0, r0, c7, c5, 4	@ ISB
++		mcr	p15, 0, r0, c1, c0, 0	@ load control register
++		mrc	p15, 0, r0, c1, c0, 0	@ and read it back
++		mov	r0, #0
++		mcr	p15, 0, r0, c7, c5, 4	@ ISB
++		mov	pc, r12
++#else
+ __armv7_mmu_cache_on:
+ 		mov	r12, lr
+ #ifdef CONFIG_MMU
+@@ -793,6 +871,7 @@ __armv7_mmu_cache_on:
+ 		mov	r0, #0
+ 		mcr	p15, 0, r0, c7, c5, 4	@ ISB
+ 		mov	pc, r12
++#endif
+ 
+ __fa526_cache_on:
+ 		mov	r12, lr
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index 7037201c5e3a..763d345a8379 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -955,6 +955,7 @@ dtb-$(CONFIG_ARCH_MEDIATEK) += \
+ dtb-$(CONFIG_ARCH_ZX) += zx296702-ad1.dtb
+ dtb-$(CONFIG_ARCH_ASPEED) += aspeed-bmc-opp-palmetto.dtb \
+ 	aspeed-ast2500-evb.dtb
++dtb-$(CONFIG_ARCH_GOLDENGATE) += cs7542-nsb3.dtb
+ endif
+ 
+ dtstree		:= $(srctree)/$(src)
+diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+index 6a8ac04bedeb..4ae2c358d821 100644
+--- a/drivers/clk/Kconfig
++++ b/drivers/clk/Kconfig
+@@ -198,6 +198,9 @@ config COMMON_CLK_OXNAS
+ 	---help---
+ 	  Support for the OXNAS SoC Family clocks.
+ 
++config GOLDENGATE_CLK
++	bool
++
+ source "drivers/clk/bcm/Kconfig"
+ source "drivers/clk/hisilicon/Kconfig"
+ source "drivers/clk/mediatek/Kconfig"
+diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
+index 42042c0a936c..300b174a24a7 100644
+--- a/drivers/clk/Makefile
++++ b/drivers/clk/Makefile
+@@ -48,6 +48,7 @@ obj-$(CONFIG_ARCH_U300)			+= clk-u300.o
+ obj-$(CONFIG_ARCH_VT8500)		+= clk-vt8500.o
+ obj-$(CONFIG_COMMON_CLK_WM831X)		+= clk-wm831x.o
+ obj-$(CONFIG_COMMON_CLK_XGENE)		+= clk-xgene.o
++obj-$(CONFIG_GOLDENGATE_CLK)		+= clk-cs75xx.o
+ 
+ # please keep this section sorted lexicographically by directory path name
+ obj-$(CONFIG_COMMON_CLK_AT91)		+= at91/
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 12d417a4d4a8..91a9bcf8e942 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -531,6 +531,14 @@ config GPIO_LOONGSON1
+ 	help
+ 	  Say Y or M here to support GPIO on Loongson1 SoCs.
+ 
++config GPIO_CS75XX
++	bool "Cortina CS75xx GPIO support"
++	depends on ARCH_GOLDENGATE
++	depends on OF_GPIO
++	select GPIOLIB_IRQCHIP
++	help
++	  Say Y here to support Cortina CS75xx GPIO.
++
+ endmenu
+ 
+ menu "Port-mapped I/O GPIO drivers"
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index d074c2299393..1c1ee211b7f5 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -141,3 +141,4 @@ obj-$(CONFIG_GPIO_ZEVIO)	+= gpio-zevio.o
+ obj-$(CONFIG_GPIO_ZYNQ)		+= gpio-zynq.o
+ obj-$(CONFIG_GPIO_ZX)		+= gpio-zx.o
+ obj-$(CONFIG_GPIO_LOONGSON1)	+= gpio-loongson1.o
++obj-$(CONFIG_GPIO_CS75XX)	+= gpio-cs75xx.o
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index d252276feadf..ac1d879a7dfd 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -451,6 +451,16 @@ config I2C_CPM
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called i2c-cpm.
+ 
++config I2C_CS75XX
++	tristate "Cortina CS75XX I2C(BIW) Controller"
++	depends on ARCH_GOLDENGATE
++	help
++	  If you say yes to this option, support will be included for the
++	  built-in I2C interface on the Cortina CS75XX of host bridges.
++
++	  This driver can also be built as a module.  If so, the module
++	  will be called i2c-cs75xx.
++
+ config I2C_DAVINCI
+ 	tristate "DaVinci I2C driver"
+ 	depends on ARCH_DAVINCI || ARCH_KEYSTONE
+diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+index 29764cc20a44..87a377c008ea 100644
+--- a/drivers/i2c/busses/Makefile
++++ b/drivers/i2c/busses/Makefile
+@@ -38,6 +38,7 @@ obj-$(CONFIG_I2C_BLACKFIN_TWI)	+= i2c-bfin-twi.o
+ obj-$(CONFIG_I2C_CADENCE)	+= i2c-cadence.o
+ obj-$(CONFIG_I2C_CBUS_GPIO)	+= i2c-cbus-gpio.o
+ obj-$(CONFIG_I2C_CPM)		+= i2c-cpm.o
++obj-$(CONFIG_I2C_CS75XX)	+= i2c-cs75xx.o
+ obj-$(CONFIG_I2C_DAVINCI)	+= i2c-davinci.o
+ obj-$(CONFIG_I2C_DESIGNWARE_CORE)	+= i2c-designware-core.o
+ obj-$(CONFIG_I2C_DESIGNWARE_PLATFORM)	+= i2c-designware-platform.o
+diff --git a/drivers/irqchip/Kconfig b/drivers/irqchip/Kconfig
+index 910cb5e23371..c468c486d9ac 100644
+--- a/drivers/irqchip/Kconfig
++++ b/drivers/irqchip/Kconfig
+@@ -280,3 +280,8 @@ config EZNPS_GIC
+ config STM32_EXTI
+ 	bool
+ 	select IRQ_DOMAIN
++
++config GOLDENGATE_IRQ
++	bool
++	select IRQ_DOMAIN
++	select GENERIC_IRQ_CHIP
+diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
+index e4dbfc85abdb..ae00f0306bb4 100644
+--- a/drivers/irqchip/Makefile
++++ b/drivers/irqchip/Makefile
+@@ -74,3 +74,4 @@ obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
+ obj-$(CONFIG_EZNPS_GIC)			+= irq-eznps.o
+ obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o
+ obj-$(CONFIG_STM32_EXTI) 		+= irq-stm32-exti.o
++obj-$(CONFIG_GOLDENGATE_IRQ)		+= irq-cs75xx.o
+diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+old mode 100644
+new mode 100755
+index b254090b8a1b..6c9b748ffd59
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -41,6 +41,50 @@ config MTD_SM_COMMON
+ 	tristate
+ 	default n
+ 
++config MTD_CORTINA_CS752X_NAND
++	tristate "NAND Flash device on Cortina board"
++	depends on ARCH_GOLDENGATE && MTD_NAND
++	help
++	  This enables the driver for the Cortina board to 
++	  access the nand device.
++
++choice
++	prompt "G2 Hardware ECC Mode"
++	depends on MTD_CORTINA_CS752X_NAND
++	default CS752X_NAND_ECC_HW_HAMMING_256
++	help
++	  This option enables the error correction provides hardware
++
++config CS752X_NAND_ECC_HW_HAMMING_256
++	bool "NAND Flash HW Hamming ECC (256) on Cortina board"
++	help
++	  This enables the driver for the Cortina board to 
++	  access the nand device with Hamming ecc.
++	  This option tolerates 1 bit error in 256 data
++
++config CS752X_NAND_ECC_HW_HAMMING_512
++	bool "NAND Flash HW Hamming ECC (512) on Cortina board"
++	help
++	  This enables the driver for the Cortina board to 
++	  access the nand device with Hamming ecc.
++	  This option tolerates 1 bit error in 512 data
++
++config CS752X_NAND_ECC_HW_BCH_8_512
++	bool "NAND Flash HW BCH ECC (8/512) on Cortina board"
++	help
++	  This enables the driver for the Cortina board to 
++	  access the nand device with BCH ecc. This option 
++	  tolerates 8 bit error in 512 data
++
++config CS752X_NAND_ECC_HW_BCH_12_512
++	bool "NAND Flash HW BCH ECC (12/512) on Cortina board"
++	help
++	  This enables the driver for the Cortina board to 
++	  access the nand device with BCH ecc. This option 
++	  tolerates 12 bit error in 512 data
++
++endchoice
++
+ config MTD_NAND_DENALI
+ 	tristate
+ 
+diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
+old mode 100644
+new mode 100755
+index cafde6f3d957..e69eab078744
+--- a/drivers/mtd/nand/Makefile
++++ b/drivers/mtd/nand/Makefile
+@@ -58,5 +58,6 @@ obj-$(CONFIG_MTD_NAND_HISI504)	        += hisi504_nand.o
+ obj-$(CONFIG_MTD_NAND_BRCMNAND)		+= brcmnand/
+ obj-$(CONFIG_MTD_NAND_QCOM)		+= qcom_nandc.o
+ obj-$(CONFIG_MTD_NAND_MTK)		+= mtk_nand.o mtk_ecc.o
++obj-$(CONFIG_MTD_CORTINA_CS752X_NAND)	+= cs752x_nand.o
+ 
+ nand-objs := nand_base.o nand_bbt.o nand_timings.o
+diff --git a/drivers/net/ethernet/Kconfig b/drivers/net/ethernet/Kconfig
+index 8cc7467b6c1f..3e15f1e8128f 100644
+--- a/drivers/net/ethernet/Kconfig
++++ b/drivers/net/ethernet/Kconfig
+@@ -40,6 +40,7 @@ source "drivers/net/ethernet/cavium/Kconfig"
+ source "drivers/net/ethernet/chelsio/Kconfig"
+ source "drivers/net/ethernet/cirrus/Kconfig"
+ source "drivers/net/ethernet/cisco/Kconfig"
++source "drivers/net/ethernet/cs752x/Kconfig"
+ 
+ config CX_ECAT
+ 	tristate "Beckhoff CX5020 EtherCAT master support"
+diff --git a/drivers/net/ethernet/Makefile b/drivers/net/ethernet/Makefile
+index a09423df83f2..4ddff9906660 100644
+--- a/drivers/net/ethernet/Makefile
++++ b/drivers/net/ethernet/Makefile
+@@ -26,6 +26,7 @@ obj-$(CONFIG_NET_VENDOR_CAVIUM) += cavium/
+ obj-$(CONFIG_NET_VENDOR_CHELSIO) += chelsio/
+ obj-$(CONFIG_NET_VENDOR_CIRRUS) += cirrus/
+ obj-$(CONFIG_NET_VENDOR_CISCO) += cisco/
++obj-$(CONFIG_NET_VENDOR_CS752X) += cs752x/
+ obj-$(CONFIG_CX_ECAT) += ec_bhf.o
+ obj-$(CONFIG_DM9000) += davicom/
+ obj-$(CONFIG_DNET) += dnet.o
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 0723c97ebea3..4dfdecde976c 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -1706,6 +1706,13 @@ config RTC_DRV_PIC32
+ 	   This driver can also be built as a module. If so, the module
+ 	   will be called rtc-pic32
+ 
++config RTC_DRV_CS75XX
++	tristate "Cortina CS75xx RTC"
++	depends on ARCH_GOLDENGATE
++	help
++	  If you say Y here you will get support for the RTC found on
++	  the Cortina CS75xx Soc.
++
+ comment "HID Sensor RTC drivers"
+ 
+ config RTC_DRV_HID_SENSOR_TIME
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 1ac694a330c8..d009422a6052 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -40,6 +40,7 @@ obj-$(CONFIG_RTC_DRV_BQ32K)	+= rtc-bq32k.o
+ obj-$(CONFIG_RTC_DRV_BQ4802)	+= rtc-bq4802.o
+ obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc-cmos.o
+ obj-$(CONFIG_RTC_DRV_COH901331)	+= rtc-coh901331.o
++obj-$(CONFIG_RTC_DRV_CS75XX)	+= rtc-cs75xx.o
+ obj-$(CONFIG_RTC_DRV_DA9052)	+= rtc-da9052.o
+ obj-$(CONFIG_RTC_DRV_DA9055)	+= rtc-da9055.o
+ obj-$(CONFIG_RTC_DRV_DA9063)	+= rtc-da9063.o
+diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
+index 25c1d7bc0100..afe689b6bf6d 100644
+--- a/drivers/tty/serial/Kconfig
++++ b/drivers/tty/serial/Kconfig
+@@ -1663,6 +1663,29 @@ config SERIAL_MVEBU_CONSOLE
+ 	  and warnings and which allows logins in single user mode)
+ 	  Otherwise, say 'N'.
+ 
++config SERIAL_CORTINA 
++        bool "CORTINA serial port support" 
++        depends on ARCH_GOLDENGATE && ARM 
++        select SERIAL_CORE 
++        help 
++          If you have a board based on a Cortina, you 
++          can enable its onboard serial port by enabling this option. 
++ 
++config SERIAL_CORTINA_CONSOLE 
++        bool "Console on CORTINA serial port" 
++        depends on SERIAL_CORTINA=y 
++        select SERIAL_CORE_CONSOLE 
++        help 
++          If you have enabled the serial port on the Cortina baseboard 
++          you can make it the console by answering Y to this option. 
++ 
++          Even if you say Y here, the currently visible virtual console 
++          (/dev/tty0) will still be used as the system console by default, but 
++          you can alter that using a kernel command line option such as 
++          "console=ttyS0". (Try "man bootparam" or see the documentation of
++          your boot loader (lilo or loadlin) about how to pass options to the
++          kernel at boot time.)
++
+ endmenu
+ 
+ config SERIAL_MCTRL_GPIO
+diff --git a/drivers/tty/serial/Makefile b/drivers/tty/serial/Makefile
+index 1278d376da50..93e3fa23e85a 100644
+--- a/drivers/tty/serial/Makefile
++++ b/drivers/tty/serial/Makefile
+@@ -93,6 +93,7 @@ obj-$(CONFIG_SERIAL_STM32)	+= stm32-usart.o
+ obj-$(CONFIG_SERIAL_MVEBU_UART)	+= mvebu-uart.o
+ obj-$(CONFIG_SERIAL_PIC32)	+= pic32_uart.o
+ obj-$(CONFIG_SERIAL_MPS2_UART)	+= mps2-uart.o
++obj-$(CONFIG_SERIAL_CORTINA)	+= serial_cortina.o
+ 
+ # GPIOLIB helpers for modem control lines
+ obj-$(CONFIG_SERIAL_MCTRL_GPIO)	+= serial_mctrl_gpio.o
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index 8f8909a668d7..32b51ecf4ac8 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -235,6 +235,14 @@ config ARM_SBSA_WATCHDOG
+ 	  To compile this driver as module, choose M here: The module
+ 	  will be called sbsa_gwdt.
+ 
++config	ARM_TWD_WATCHDOG
++	tristate "ARM TWD Watchdog"
++	depends on HAVE_ARM_TWD
++	help
++	  ARM TWD Watchdog timer.
++	  This will
++	  reboot the system when the timer expires with the watchdog enabled.
++
+ config ASM9260_WATCHDOG
+ 	tristate "Alphascale ASM9260 watchdog"
+ 	depends on MACH_ASM9260
+diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
+index caa9f4aa492a..e50c6a371bf4 100644
+--- a/drivers/watchdog/Makefile
++++ b/drivers/watchdog/Makefile
+@@ -37,6 +37,7 @@ obj-$(CONFIG_USBPCWATCHDOG) += pcwd_usb.o
+ # ARM Architecture
+ obj-$(CONFIG_ARM_SP805_WATCHDOG) += sp805_wdt.o
+ obj-$(CONFIG_ARM_SBSA_WATCHDOG) += sbsa_gwdt.o
++obj-$(CONFIG_ARM_TWD_WATCHDOG) += arm_twd_wdt.o
+ obj-$(CONFIG_ASM9260_WATCHDOG) += asm9260_wdt.o
+ obj-$(CONFIG_AT91RM9200_WATCHDOG) += at91rm9200_wdt.o
+ obj-$(CONFIG_AT91SAM9X_WATCHDOG) += at91sam9_wdt.o
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index d3a8668755d7..62256baca385 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -663,6 +663,15 @@ struct sk_buff {
+ 
+ 	unsigned long		_skb_refdst;
+ 	void			(*destructor)(struct sk_buff *skb);
++
++#ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
++	bool                    (*skb_recycle) (struct sk_buff *skb);
++#else /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
++#ifdef CONFIG_SMB_TUNING
++	int                     (*skb_recycle) (struct sk_buff *skb);
++#endif
++#endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
++
+ #ifdef CONFIG_XFRM
+ 	struct	sec_path	*sp;
+ #endif
+@@ -730,6 +739,10 @@ struct sk_buff {
+ 	__u8			wifi_acked:1;
+ 	__u8			no_fcs:1;
+ 
++#ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
++	__u8			dirty_buffer:1;
++#endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
++
+ 	/* Indicates the inner headers are valid in the skbuff. */
+ 	__u8			encapsulation:1;
+ 	__u8			encap_hdr_csum:1;
+@@ -807,6 +820,12 @@ struct sk_buff {
+ 	sk_buff_data_t		end;
+ 	unsigned char		*head,
+ 				*data;
++#ifdef CONFIG_ARCH_GOLDENGATE
++#ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
++	unsigned char		*map_end;
++#endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
++#endif /* CONFIG_ARCH_GOLDENGATE */
++
+ 	unsigned int		truesize;
+ 	atomic_t		users;
+ };
+diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
+index df7451d35131..457c48809f86 100644
+--- a/include/uapi/linux/pkt_sched.h
++++ b/include/uapi/linux/pkt_sched.h
+@@ -107,6 +107,20 @@ struct tc_sizespec {
+ 	unsigned int	tsize;
+ };
+ 
++#ifdef CONFIG_ARCH_GOLDENGATE
++struct tc_wredspec {
++	__u8 enbl;
++	__u8 min_pct_base;
++	__u8 max_pct_base;
++	__u8 min_pct_buffer;
++	__u8 max_pct_buffer;
++	__u8 drop_prob;
++	__u8 aqd_lp_filter_const;
++};
++
++#define TC_WREDTAB_SIZE	1024
++#endif /* CONFIG_ARCH_GOLDENGATE */
++
+ enum {
+ 	TCA_STAB_UNSPEC,
+ 	TCA_STAB_BASE,
+diff --git a/include/uapi/linux/serial_core.h b/include/uapi/linux/serial_core.h
+index 99dbed8a8874..21e23f32e034 100644
+--- a/include/uapi/linux/serial_core.h
++++ b/include/uapi/linux/serial_core.h
+@@ -270,4 +270,7 @@
+ /* MPS2 UART */
+ #define PORT_MPS2UART	116
+ 
++/* Cortina CS75xx UART */
++#define	PORT_CORTINA	117
++
+ #endif /* _UAPILINUX_SERIAL_CORE_H */
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 86f329c9fef1..92fa3d2346cc 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -250,6 +250,13 @@ struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
+ 	skb->pfmemalloc = pfmemalloc;
+ 	atomic_set(&skb->users, 1);
+ 	skb->head = data;
++
++#ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
++	/* ...by default, buffer allocated is "dirty" (memory needs to be flushed) */
++	skb->dirty_buffer = 1;
++	skb->map_end = NULL;
++#endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
++
+ 	skb->data = data;
+ 	skb_reset_tail_pointer(skb);
+ 	skb->end = skb->tail + size;
+@@ -698,6 +705,11 @@ static void skb_release_all(struct sk_buff *skb)
+ 
+ void __kfree_skb(struct sk_buff *skb)
+ {
++#ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
++	if (skb->skb_recycle && skb->skb_recycle(skb))
++		return;
++#endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
++
+ 	skb_release_all(skb);
+ 	kfree_skbmem(skb);
+ }
+@@ -775,6 +787,79 @@ void consume_skb(struct sk_buff *skb)
+ }
+ EXPORT_SYMBOL(consume_skb);
+ 
++/**
++ * 	skb_recycle - clean up an skb for reuse
++ * 	@skb: buffer
++ *
++ * 	Recycles the skb to be reused as a receive buffer. This
++ * 	function does any necessary reference count dropping, and
++ * 	cleans up the skbuff as if it just came from __alloc_skb().
++ */
++void skb_recycle(struct sk_buff *skb)
++{
++	struct skb_shared_info *shinfo;
++
++	skb_release_head_state(skb);
++
++	shinfo = skb_shinfo(skb);
++	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
++	atomic_set(&shinfo->dataref, 1);
++
++	memset(skb, 0, offsetof(struct sk_buff, tail));
++	skb->data = skb->head + NET_SKB_PAD;
++	skb_reset_tail_pointer(skb);
++
++#ifdef CONFIG_CS752X_ACCEL_KERNEL
++	cs_accel_cb_reset_state(skb);
++#endif
++}
++EXPORT_SYMBOL(skb_recycle);
++
++bool skb_is_recycleable(const struct sk_buff *skb, int skb_size)
++{
++	if (irqs_disabled())
++		return false;
++
++	if (skb_shinfo(skb)->tx_flags & SKBTX_DEV_ZEROCOPY)
++		return false;
++
++	if (skb_is_nonlinear(skb) || skb->fclone != SKB_FCLONE_UNAVAILABLE)
++		return false;
++
++	skb_size = SKB_DATA_ALIGN(skb_size + NET_SKB_PAD);
++	if (skb_end_pointer(skb) - skb->head < skb_size)
++		return false;
++
++	if (skb_shared(skb) || skb_cloned(skb))
++		return false;
++
++	return true;
++}
++EXPORT_SYMBOL(skb_is_recycleable);
++
++/**
++ *	skb_recycle_check - check if skb can be reused for receive
++ *	@skb: buffer
++ *	@skb_size: minimum receive buffer size
++ *
++ *	Checks that the skb passed in is not shared or cloned, and
++ *	that it is linear and its head portion at least as large as
++ *	skb_size so that it can be recycled as a receive buffer.
++ *	If these conditions are met, this function does any necessary
++ *	reference count dropping and cleans up the skbuff as if it
++ *	just came from __alloc_skb().
++ */
++bool skb_recycle_check(struct sk_buff *skb, int skb_size)
++{
++	if (!skb_is_recycleable(skb, skb_size))
++		return false;
++
++	skb_recycle(skb);
++
++	return true;
++}
++EXPORT_SYMBOL(skb_recycle_check);
++
+ void __kfree_skb_flush(void)
+ {
+ 	struct napi_alloc_cache *nc = this_cpu_ptr(&napi_alloc_cache);
+@@ -856,6 +941,12 @@ static void __copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
+ 	new->dev		= old->dev;
+ 	memcpy(new->cb, old->cb, sizeof(old->cb));
+ 	skb_dst_copy(new, old);
++
++#ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
++	/* ...reset buffer dirty flag (if cloning, will be adjusted later) */
++	new->dirty_buffer = 1;
++#endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
++
+ #ifdef CONFIG_XFRM
+ 	new->sp			= secpath_get(old->sp);
+ #endif
+@@ -914,6 +1005,11 @@ static struct sk_buff *__skb_clone(struct sk_buff *n, struct sk_buff *skb)
+ 	n->sk = NULL;
+ 	__copy_skb_header(n, skb);
+ 
++#ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
++	/* ...set buffer dirty flag */
++	C(dirty_buffer);
++#endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
++
+ 	C(len);
+ 	C(data_len);
+ 	C(mac_len);
+@@ -923,9 +1019,19 @@ static struct sk_buff *__skb_clone(struct sk_buff *n, struct sk_buff *skb)
+ 	n->peeked = 0;
+ 	C(pfmemalloc);
+ 	n->destructor = NULL;
++
++#if defined(CONFIG_SMB_TUNING) || defined(CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT)
++	n->skb_recycle = NULL;
++#endif
++
+ 	C(tail);
+ 	C(end);
+ 	C(head);
++
++#ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
++	C(map_end);
++#endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
++
+ 	C(head_frag);
+ 	C(data);
+ 	C(truesize);
+@@ -1225,6 +1331,16 @@ int pskb_expand_head(struct sk_buff *skb, int nhead, int ntail,
+ 		BUG();
+ 
+ 	size = SKB_DATA_ALIGN(size);
++ 
++#ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
++	/* ...if buffer is partially mapped, complete mapping */
++	if (skb->map_end && (u32)skb_tail_pointer(skb) > (u32)skb->map_end) {
++		dma_map_single(NULL, skb->map_end,
++				SKB_DATA_ALIGN(skb_tail_pointer(skb) - skb->map_end),
++				DMA_FROM_DEVICE);
++		skb->map_end = NULL;
++	}
++#endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
+ 
+ 	if (skb_pfmemalloc(skb))
+ 		gfp_mask |= __GFP_MEMALLOC;
+@@ -1278,6 +1394,12 @@ int pskb_expand_head(struct sk_buff *skb, int nhead, int ntail,
+ 	skb->cloned   = 0;
+ 	skb->hdr_len  = 0;
+ 	skb->nohdr    = 0;
++
++#ifdef CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT
++	skb->dirty_buffer = 1;
++	skb->map_end = NULL;
++#endif /* CONFIG_CS75XX_NI_EXPERIMENTAL_SW_CACHE_MANAGEMENT */
++
+ 	atomic_set(&skb_shinfo(skb)->dataref, 1);
+ 	return 0;
+ 
