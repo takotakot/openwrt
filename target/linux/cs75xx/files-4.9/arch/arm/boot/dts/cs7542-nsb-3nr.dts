@@ -108,26 +108,26 @@
 };
 
 &rtc0 {
-	status = "ok";
+	status = "okay";
 };
 
 &arm_wdt {
-	status = "ok";
+	status = "okay";
 };
 
 #if 0
 &soc_i2c {
 	clock-frequency = <100000>;
-	status = "ok";
+	status = "okay";
 };
 #endif
 
 &nandc {
-	status = "ok";
+	status = "okay";
 };
 
 &ether {
-	status = "ok";
+	status = "okay";
 
 	mdio {
 		phy0: ethernet-phy@1 {

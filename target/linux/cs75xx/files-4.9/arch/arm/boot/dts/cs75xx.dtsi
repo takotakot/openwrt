@@ -45,7 +45,7 @@
 			interrupt-controller;
 			reg = <0xF8001000 0x1000>,
 			      <0xF8000100 0x0100>;
-			status = "ok";
+			status = "okay";
 		};
 
 		l2: l2-cache-controller@F5010000 {
@@ -53,7 +53,7 @@
 			reg = <0xF5010000 0x1000>;
 			cache-unified;
 			cache-level = <2>;
-			status = "ok";
+			status = "okay";
 		};
 
 		global_timer: timer@F8000200 {
@@ -62,7 +62,7 @@
 			reg = <0xF8000200 0x20>;
 			interrupts = <GIC_PPI 11 IRQ_TYPE_EDGE_RISING>;
 			clocks = <&mainclk CS75XX_CLK_APB>;
-			status = "ok";
+			status = "okay";
 		};
 
 		arm_timer: twd_timer@F8000600 {
@@ -71,7 +71,7 @@
 			reg = <0xF8000600 0x20>;
 			interrupts = <GIC_PPI 13 IRQ_TYPE_EDGE_RISING>;
 			clocks = <&mainclk CS75XX_CLK_APB>;
-			status = "ok";
+			status = "okay";
 		};
 
 		arm_wdt: twd_wdt@F8000620 {
@@ -86,7 +86,7 @@
 			compatible = "cortina,cs75xx-clk";
 			reg = <0xF000000C 0x04>;	/* global strap */
 			#clock-cells = <1>;
-			status = "ok";
+			status = "okay";
 		};
 
 		intc: regbus_intc@F0070004 {
@@ -96,7 +96,7 @@
 			interrupt-parent = <&gic>;
 			interrupts = <GIC_SPI 3 4>;
 			reg = <0xF0070004 0x8>;
-			status = "ok";
+			status = "okay";
 		};
 
 		uart0: serial@F0070110 {
@@ -105,7 +105,7 @@
 			interrrupt-parent = <&gic>;
 			interrupts = <GIC_SPI 6 4>;	/* 38 - 32 = 6 */
 			clocks = <&mainclk CS75XX_CLK_APB>;
-			status = "ok";
+			status = "okay";
 		};
 		uart1: serial@F0070140 {
 			compatible = "cortina,cs75xx-uart";
