@@ -4,8 +4,6 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 
 define Device/Default
-	CS_SOC :=
-	DEVICE_DTS = $$(CS_SOC)-$(subst _,-,$(1))
 	PROFILES := Default
 	KERNEL_DEPENDS = $$(wildcard $(DTS_DIR)/$$(DEVICE_DTS).dts)
 	KERNEL_INITRAMFS_PREFIX := $$(IMG_PREFIX)-$(1)-initramfs
@@ -43,7 +41,7 @@ endef
 
 define Device/elecom_nsb-3nr
 	$(call Device/LegacyImage)
-	CS_SOC := cs7542
+	DEVICE_DTS := cs7542-nsb-3nr
 	BLOCKSIZE := 128k
 	PAGESIZE := 2048
 	BOARD_NAME := nsb-3nr
