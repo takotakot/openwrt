@@ -1,21 +1,21 @@
-
 /dts-v1/;
 #include "cs75xx.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 
 / {
-	model = "ELECOM NSB-3NR/3MS Network-Attached Storage series";
+	model = "ELECOM NSB-3NR";
+	compatible = "elecom,nsb-3nr";
 
 	memory {
 		device_type = "memory";
 		reg = <0x00000000 0x40000000>; /* 1GB */
 	};
 
-#if 0
 	chosen {
 		bootargs = "console=ttyS0,115200 loglevel=8";
 	};
-#endif
 
 #if 0
 	alias {
@@ -76,6 +76,7 @@
 			reg = <0x4d>;
 		};
 	};
+
 	i2c1: i2c@1 {
 		compatible = "i2c-gpio";
 		gpios = <&gpio2 3 GPIO_ACTIVE_HIGH	/* SDA */
