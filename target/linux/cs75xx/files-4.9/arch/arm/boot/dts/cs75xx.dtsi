@@ -1,0 +1,229 @@
+
+#include "skeleton.dtsi"
+#include <dt-bindings/clock/cs75xx-clock.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/gpio/gpio.h>
+/ {
+	compatible = "cortina,cs75xx";
+
+	aliases {
+		serial0 = &uart0;
+		serial1 = &uart1;
+		gpio0 = &gpio0;
+		gpio1 = &gpio1;
+		gpio2 = &gpio2;
+		gpio3 = &gpio3;
+		gpio4 = &gpio4;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <0>;
+		};
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <1>;
+		};
+	};
+
+	amba: amba {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		interrupt-parent = <&gic>;
+		ranges;
+
+		gic: interrupt-controller@F8001000 {
+			compatible = "arm,cortex-a9-gic";
+			#interrupt-cells = <3>;
+			interrupt-controller;
+			reg = <0xF8001000 0x1000>,
+			      <0xF8000100 0x0100>;
+			status = "ok";
+		};
+
+		l2: l2-cache-controller@F5010000 {
+			compatible = "arm,pl310-cache";
+			reg = <0xF5010000 0x1000>;
+			cache-unified;
+			cache-level = <2>;
+			status = "ok";
+		};
+
+		global_timer: timer@F8000200 {
+			compatible = "arm,cortex-a9-global-timer";
+			interrupt-parent = <&gic>;
+			reg = <0xF8000200 0x20>;
+			interrupts = <GIC_PPI 11 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&mainclk CS75XX_CLK_APB>;
+			status = "ok";
+		};
+
+		arm_timer: twd_timer@F8000600 {
+			compatible = "arm,cortex-a9-twd-timer";
+			interrupt-parent = <&gic>;
+			reg = <0xF8000600 0x20>;
+			interrupts = <GIC_PPI 13 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&mainclk CS75XX_CLK_APB>;
+			status = "ok";
+		};
+
+		arm_wdt: twd_wdt@F8000620 {
+			compatible = "arm,cortex-a9-twd-wdt";
+			interrupt-parent = <&gic>;
+			reg = <0xF8000620 0x20>;
+			interrupts = <GIC_PPI 14 IRQ_TYPE_EDGE_RISING>;
+			status = "disable";
+		};
+
+		mainclk: clock@F000000C {
+			compatible = "cortina,cs75xx-clk";
+			reg = <0xF000000C 0x04>;	/* global strap */
+			#clock-cells = <1>;
+			status = "ok";
+		};
+
+		intc: regbus_intc@F0070004 {
+			compatible = "cortina,cs75xx-intc";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			interrupt-parent = <&gic>;
+			interrupts = <GIC_SPI 3 4>;
+			reg = <0xF0070004 0x8>;
+			status = "ok";
+		};
+
+		uart0: serial@F0070110 {
+			compatible = "cortina,cs75xx-uart";
+			reg = <0xF0070110 0x30>;
+			interrrupt-parent = <&gic>;
+			interrupts = <GIC_SPI 6 4>;	/* 38 - 32 = 6 */
+			clocks = <&mainclk CS75XX_CLK_APB>;
+			status = "ok";
+		};
+		uart1: serial@F0070140 {
+			compatible = "cortina,cs75xx-uart";
+			reg = <0xF0070140 0x30>;
+			interrrupt-parent = <&gic>;
+			interrupts = <GIC_SPI 7 4>;	/* 39 - 32 = 7 */
+			clocks = <&mainclk CS75XX_CLK_APB>;
+			status = "disabled";
+		};
+
+		rtc0: rtc@F4920000 {
+			compatible = "cortina,cs75xx-rtc";
+			reg = <0xF4920000 0x50>;
+			interrrupt-parent = <&gic>;
+			interrupts = <GIC_SPI 10 4>,
+					<GIC_SPI 11 4>;
+			status = "disabled";
+		};
+
+		gpio0: gpio@F00701D0 {
+			compatible = "cortina,cs75xx-gpio";
+			reg = <0xF00701D0 0x20>, <0xF000001C 0x04>;
+			interrupts = <6>;
+			interrupt-parent = <&intc>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+		gpio1: gpio@F00701F0 {
+			compatible = "cortina,cs75xx-gpio";
+			reg = <0xF00701F0 0x20>, <0xF0000020 0x04>;
+			interrupts = <7>;
+			interrupt-parent = <&intc>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+		gpio2: gpio@F0070210 {
+			compatible = "cortina,cs75xx-gpio";
+			reg = <0xF0070210 0x20>, <0xF0000024 0x04>;
+			interrupts = <8>;
+			interrupt-parent = <&intc>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+		gpio3: gpio@F0070230 {
+			compatible = "cortina,cs75xx-gpio";
+			reg = <0xF0070230 0x20>, <0xF0000028 0x04>;
+			interrupts = <9>;
+			interrupt-parent = <&intc>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+		gpio4: gpio@F0070250 {
+			compatible = "cortina,cs75xx-gpio";
+			reg = <0xF0070250 0x20>, <0xF000002C 0x04>;
+			interrupts = <10>;
+			interrupt-parent = <&intc>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		soc_i2c: i2c@0xF00700E8 {
+			compatible = "cortina,cs75xx-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xF00700E8 0x28>;
+			interrupts = <11>;
+			interrupt-parent = <&intc>;
+			clocks = <&mainclk CS75XX_CLK_APB>;
+			status = "disabled";
+		};
+
+		nandc: nand@0xF0050000 {
+			compatible = "cortina,cs752x-nand";
+			reg = <0xE0000000 0x08000000>,	/* NAND memory DMA space */
+				<0xF0050000 0x300>,	/* NAND controller */
+				<0xF0090400 0x300>;	/* DMA_DMA_SSP */
+			status = "disabled";
+		};
+
+		ether: ether@0xF0010000 {
+			compatible = "cortina,cs752x-eth";
+
+			reg = <0xF0000000 0x100>,
+				<0xF0010000 0x500>, <0xF00700A0 0x48>,
+				<0xF0090000 0x400>, <0xF0020000 0x4000>, 
+				<0xF0030000 0x400>, <0xF0040000 0x800>, <0xF0060000 0x100>,
+				<0xF0400000 0x100000>;
+			reg-names = "global",
+					"ni", "mdio",
+					"dma_lso", "fe",
+					"qm", "tm", "sch",
+					"xram";
+
+			interrrupt-parent = <&gic>;
+			interrupts = <GIC_SPI 1 4>,
+					<GIC_SPI 37 4>, <GIC_SPI 38 4>, <GIC_SPI 39 4>,
+					<GIC_SPI 40 4>, <GIC_SPI 41 4>, <GIC_SPI 42 4>,
+					<GIC_SPI 43 4>, <GIC_SPI 44 4>;
+			interrupt-names = "generic",
+						"eth0", "eth1", "eth2",
+						"wfo_pe0", "wfo_pe1", "wfo",
+						"pe", "arp";
+			status = "disabled";
+
+			mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+		};
+	};
+};
