@@ -151,6 +151,10 @@ case "$FIRMWARE" in
 		ath9k_eeprom_extract "art" 20480 1088
 		ath9k_patch_fw_mac_crc $(macaddr_add $(mtd_get_mac_text "mac" 24) 1) 2
 		;;
+	logitec,lan-w451ngr)
+		ath9k_eeprom_extract "ART" 4096 1088
+		ath9k_patch_fw_mac_crc $(macaddr_add $(mtd_get_mac_ascii u-boot-env wanaddr) -1) 2
+		;;
 	ocedo,raccoon|\
 	tplink,tl-wdr3600|\
 	tplink,tl-wdr4300|\

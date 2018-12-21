@@ -12,6 +12,13 @@ define Device/buffalo_whr-g301n
 endef
 TARGET_DEVICES += buffalo_whr-g301n
 
+define Device/logitec_lan-w451ngr
+  ATH_SOC := ar7242
+  DEVICE_TITLE := Logitec LAN-W451NGR
+  IMAGE_SIZE := 7744k
+endef
+TARGET_DEVICES += logitec_lan-w451ngr
+
 define Device/pqi_air-pen
   ATH_SOC := ar9330
   DEVICE_TITLE := PQI Air-Pen
