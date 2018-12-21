@@ -35,6 +35,14 @@ define Device/dlink_dir-615-e4
 endef
 TARGET_DEVICES += dlink_dir-615-e4
 
+define Device/logitec_lan-w451ngr
+  SOC := ar7242
+  DEVICE_VENDOR := Logitec
+  DEVICE_MODEL := LAN-W451NGR
+  IMAGE_SIZE := 7744k
+endef
+TARGET_DEVICES += logitec_lan-w451ngr
+
 define Device/pqi_air-pen
   SOC := ar9330
   DEVICE_VENDOR := PQI
