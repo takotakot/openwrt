@@ -1058,6 +1058,14 @@ define Device/nec_wr8750n
 endef
 TARGET_DEVICES += nec_wr8750n
 
+define Device/nec_wr9500n
+  $(Device/nec-netbsd-aterm)
+  SOC := ar9344
+  DEVICE_MODEL := Aterm WR9500N
+  IMAGE_SIZE := 16128k
+endef
+TARGET_DEVICES += nec_wr9500n
+
 define Device/netgear_ex6400_ex7300
   $(Device/netgear_generic)
   SOC := qca9558
