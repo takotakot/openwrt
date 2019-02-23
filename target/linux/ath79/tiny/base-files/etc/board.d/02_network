@@ -51,6 +51,7 @@ ath79_setup_interfaces()
 	tplink,tl-wr802n-v2)
 		ucidef_set_interface_lan "eth0"
 		;;
+	nec,wr8175n|\
 	tplink,tl-mr3220-v1|\
 	tplink,tl-mr3420-v1|\
 	tplink,tl-mr3420-v3|\
