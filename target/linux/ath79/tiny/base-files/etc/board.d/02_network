@@ -28,6 +28,10 @@ ath79_setup_interfaces()
 		ucidef_add_switch "switch0" \
 			"0@eth1" "1:lan" "2:lan" "3:lan" "4:lan"
 		;;
+	nec,wg300hp)
+		ucidef_add_switch "switch0" \
+			"0@eth0" "2:lan" "3:lan" "4:lan" "5:lan" "1:wan"
+		;;
 	pqi,air-pen|\
 	tplink,tl-mr10u|\
 	tplink,tl-mr3020-v1|\
@@ -99,6 +103,9 @@ ath79_setup_macs()
 		lan_mac=$(mtd_get_mac_ascii "nvram" "lan_mac")
 		wan_mac=$(mtd_get_mac_ascii "nvram" "wan_mac")
 		label_mac=$wan_mac
+		;;
+	nec,wg300hp)
+		wan_mac=$(mtd_get_mac_binary config 0xc)
 		;;
 	tplink,tl-wr941-v2|\
 	tplink,tl-wr941n-v7-cn)

@@ -36,6 +36,14 @@ define Device/dlink_dir-615-e4
 endef
 TARGET_DEVICES += dlink_dir-615-e4
 
+define Device/nec_wg300hp
+  $(Device/nec-netbsd-aterm)
+  SOC := ar9342
+  DEVICE_MODEL := Aterm WG300HP
+  IMAGE_SIZE := 3840k
+endef
+TARGET_DEVICES += nec_wg300hp
+
 define Device/nec_wr8175n
   $(Device/nec-netbsd-aterm)
   SOC := ar9341
