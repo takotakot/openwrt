@@ -413,6 +413,17 @@ define Device/iodata_wn-ac733gr3
 endef
 TARGET_DEVICES += iodata_wn-ac733gr3
 
+define Device/iodata_wn-g300r3
+  DTS := WN-G300R3
+  DEVICE_TITLE := I-O DATA WN-G300R3
+  IMAGE_SIZE := 3648k
+  IMAGES += factory.bin
+  IMAGE/factory.bin := \
+    $$(sysupgrade_bin) | check-size $$$$(IMAGE_SIZE) | \
+    senao-header -r 0x30a -p 0x65 -t 2
+endef
+TARGET_DEVICES += iodata_wn-g300r3
+
 define Device/kimax_u35wf
   DTS := U35WF
   IMAGE_SIZE := 16064k
