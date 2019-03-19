@@ -256,7 +256,8 @@
 			};
 
 			partition@200000 {
-				label = "Kernel";
+				compatible = "openwrt,trx";
+				label = "firmware";
 				reg = <0x200000 0x3a00000>;
 			};
 
