@@ -12,7 +12,7 @@ define Device/buffalo-wsr-2533dhp2
   PAGESIZE := 2048
   KERNEL_INITRAMFS = kernel-bin | lzma | \
     fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
-    trx -M 44485032
+    buffalo-initramfs-trx -M 44485032
 endef
 TARGET_DEVICES += buffalo-wsr-2533dhp2
 
