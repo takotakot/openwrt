@@ -1,7 +1,18 @@
+define Build/buffalo-initramfs-trx
+	$(STAGING_DIR_HOST)/bin/trx $(1) \
+		-o $@.new -f $@ -a 4
+  mv $@.new $@
+endef
+
 define Device/buffalo-wsr-2533dhp2
   DEVICE_TITLE := Buffalo WSR-2533DHP2
   DEVICE_DTS := mt7622-buffalo-wsr-2533dhp2
   DEVICE_DTS_DIR := $(DTS_DIR)/mediatek
+  BLOCK_SIZE := 128k
+  PAGESIZE := 2048
+  KERNEL_INITRAMFS = kernel-bin | lzma | \
+    fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
+    trx -M 44485032
 endef
 TARGET_DEVICES += buffalo-wsr-2533dhp2
 
