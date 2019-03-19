@@ -271,7 +271,7 @@
 				read-only;
 			};
 
-			partition@7800000 {
+			board_data: partition@7800000 {
 				label = "board_data";
 				reg = <0x7800000 0x200000>;
 				read-only;
