@@ -35,6 +35,8 @@
 
 	leds {
 		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&led_pins>;
 
 		wireless_amber {
 			label = "wsr-2533dhp2:amber:wireless";
@@ -153,6 +155,13 @@
 			groups =  "i2s_out_bclk_ws_mclk",
 				  "i2s1_in_data",
 				  "i2s1_out_data";
+		};
+	};
+
+	led_pins: led-pins {
+		mux {
+			pins = "I2S2_OUT", "I2S3_OUT";
+			drive-strength = <16>;
 		};
 	};
 
