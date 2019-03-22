@@ -14,6 +14,13 @@
 		bootargs = "console=ttyS0,115200n1";
 	};
 
+	aliases {
+		led-boot = &power_green;
+		led-failsafe = &power_amber;
+		led-running = &power_green;
+		led-upgrade = &power_green;
+	};
+
 	cpus {
 		cpu@0 {
 			proc-supply = <&mt6380_vcpu_reg>;
@@ -23,6 +30,41 @@
 		cpu@1 {
 			proc-supply = <&mt6380_vcpu_reg>;
 			sram-supply = <&mt6380_vm_reg>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		wireless_amber {
+			label = "wsr-2533dhp2:amber:wireless";
+			gpios = <&pio 2 GPIO_ACTIVE_HIGH>;
+		};
+
+		power_amber: power_amber {
+			label = "wsr-2533dhp2:amber:power";
+			gpios = <&pio 3 GPIO_ACTIVE_LOW>;
+		};
+
+		power_green: power_green {
+			label = "wsr-2533dhp2:green:power";
+			gpios = <&pio 4 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+		};
+
+		wireless_green {
+			label = "wsr-2533dhp2:green:wireless";
+			gpios = <&pio 15 GPIO_ACTIVE_HIGH>;
+		};
+
+		internet {
+			label = "wsr-2533dhp2:green:internet";
+			gpios = <&pio 19 GPIO_ACTIVE_HIGH>;
+		};
+
+		router {
+			label = "wsr-2533dhp2:green:router";
+			gpios = <&pio 20 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
