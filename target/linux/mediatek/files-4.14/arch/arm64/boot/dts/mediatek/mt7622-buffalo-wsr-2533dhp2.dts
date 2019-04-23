@@ -251,13 +251,13 @@
 	pinctrl-0 = <&eth_pins>;
 	status = "okay";
 
-	mtd-mac-address = <&board_data 0x4>;
-	mtd-mac-address-increment = <(-1)>;
-
 	gmac1: mac@1 {
 		compatible = "mediatek,eth-mac";
 		reg = <1>;
 		phy-handle = <&phy5>;
+
+		mtd-mac-address = <&board_data 0x4>;
+		mtd-mac-address-increment = <(-1)>;
 	};
 
 	mdio-bus {
