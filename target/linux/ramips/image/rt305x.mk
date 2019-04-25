@@ -315,6 +315,16 @@ define Device/buffalo_whr-g300n
 endef
 TARGET_DEVICES += buffalo_whr-g300n
 
+define Device/corega_cg-wlr300gne
+  SOC := rt3052
+  IMAGE_SIZE := 7680k
+  DEVICE_VENDOR := Corega
+  DEVICE_MODEL := CG-WLR300GNE
+  DEVICE_PACKAGES := \
+    kmod-switch-rtl8366rb kmod-usb-core kmod-usb-dwc2 kmod-usb-ledtrig-usbport
+endef
+TARGET_DEVICES += corega_cg-wlr300gne
+
 define Device/dlink_dap-1350
   SOC := rt3052
   IMAGES += factory.bin factory-NA.bin

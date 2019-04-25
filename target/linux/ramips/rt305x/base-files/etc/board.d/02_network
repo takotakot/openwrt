@@ -133,6 +133,12 @@ ramips_setup_interfaces()
 		ucidef_add_switch "switch0" \
 			"1:lan" "2:lan" "3:lan" "4:lan" "0:wan" "5@eth0"
 		;;
+	corega,cg-wlr300gne)
+		ucidef_add_switch "switch0" \
+			"5t:lan" "5t:wan" "6@eth0"
+		ucidef_add_switch "switch1" \
+			"1:lan" "2:lan" "3:lan" "4:lan" "0:wan" "5@eth0"
+		;;
 	dlink,dir-615-h1)
 		ucidef_add_switch "switch0" \
 			"0:lan:4" "1:lan:3" "2:lan:2" "3:lan:1" "4:wan:5" "6@eth0"
