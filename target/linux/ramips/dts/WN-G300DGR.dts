@@ -16,6 +16,11 @@
 		led-upgrade = &led_power_blue;
 	};
 
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x2000000>;
+	};
+
 	flash@1f000000 {
 		compatible = "cfi-flash";
 		reg = <0x1f000000 0x400000>;
