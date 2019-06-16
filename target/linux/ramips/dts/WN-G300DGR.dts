@@ -131,21 +131,6 @@
 	};
 };
 
-&pinctrl {
-	state_default: pinctrl0 {
-		gpio {
-			ralink,group = "spi", "i2c", "jtag", "mdio", "uartf";
-			ralink,function = "gpio";
-		};
-	};
-};
-
-&ethernet {
-	mtd-mac-address = <&factory 0x4>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&rgmii_pins>;
-};
-
 &esw {
 	ralink,rgmii = <1>;
 	mediatek,portmap = <0x3f>;
@@ -159,10 +144,25 @@
 	ralink,fpa2 = <0x1f003fff>;
 };
 
-&wmac {
-	ralink,mtd-eeprom = <&factory 0>;
+&ethernet {
+	mtd-mac-address = <&factory 0x4>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&rgmii_pins>;
 };
 
 &otg {
 	status = "okay";
+};
+
+&pinctrl {
+	state_default: pinctrl0 {
+		gpio {
+			ralink,group = "spi", "i2c", "jtag", "mdio", "uartf";
+			ralink,function = "gpio";
+		};
+	};
+};
+
+&wmac {
+	ralink,mtd-eeprom = <&factory 0>;
 };
