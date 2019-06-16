@@ -390,6 +390,15 @@ define Device/hw550-3g
 endef
 TARGET_DEVICES += hw550-3g
 
+define Device/iodata_wn-g300dgr
+  DTS := WN-G300DGR
+  BLOCKSIZE := 64k
+  IMAGE_SIZE := 3456k
+  DEVICE_TITLE := IODATA WN-G300DGR
+  DEVICE_PACKAGES := kmod-switch-rtl8366rb kmod-usb-core kmod-usb-dwc2
+endef
+TARGET_DEVICES += iodata_wn-g300dgr
+
 define Device/ip2202
   DTS := IP2202
   DEVICE_TITLE := Poray IP2202
@@ -816,15 +825,6 @@ define Device/wl-351
   DEVICE_PACKAGES := kmod-switch-rtl8366rb kmod-swconfig swconfig
 endef
 TARGET_DEVICES += wl-351
-
-define Device/wn-g300dgr
-  DTS := WN-G300DGR
-  BLOCKSIZE := 64k
-  IMAGE_SIZE := 3456k
-  DEVICE_TITLE := IODATA WN-G300DGR
-  DEVICE_PACKAGES := kmod-switch-rtl8366rb kmod-usb-core kmod-usb-dwc2
-endef
-TARGET_DEVICES += wn-g300dgr
 
 define Device/wnce2001
   DTS := WNCE2001

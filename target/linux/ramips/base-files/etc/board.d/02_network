@@ -208,10 +208,6 @@ ramips_setup_interfaces()
 		ucidef_add_switch "switch0" \
 			"0:lan" "1:lan" "2:lan" "3:lan" "4:wan" "5@eth0"
 		;;
-	wn-g300dgr)
-		ucidef_add_switch "switch0" \
-			"0:lan" "1:lan" "2:lan" "3:wan" "5@eth0"
-		;;
 	asl26555-8M|\
 	asl26555-16M|\
 	rp-n53)
@@ -348,6 +344,10 @@ ramips_setup_interfaces()
 	iodata,wn-ac733gr3)
 		ucidef_add_switch "switch1" \
 			"1:lan:4" "2:lan:3" "3:lan:2" "4:lan:1" "0:wan" "6@eth0"
+		;;
+	iodata,wn-g300dgr)
+		ucidef_add_switch "switch0" \
+			"0:lan" "1:lan" "2:lan" "3:wan" "5@eth0"
 		;;
 	kn_rf)
 		ucidef_add_switch "switch0" \
