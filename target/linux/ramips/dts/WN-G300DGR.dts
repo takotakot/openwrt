@@ -51,8 +51,8 @@
 				read-only;
 			};
 
-			factory: partition@40000 {
-				label = "factory";
+			Factory: partition@40000 {
+				label = "Factory";
 				reg = <0x40000 0x10000>;
 				read-only;
 			};
@@ -158,7 +158,7 @@
 };
 
 &ethernet {
-	mtd-mac-address = <&factory 0x4>;
+	mtd-mac-address = <&Factory 0x4>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&rgmii_pins>;
 };
@@ -186,5 +186,5 @@
 };
 
 &wmac {
-	ralink,mtd-eeprom = <&factory 0>;
+	ralink,mtd-eeprom = <&Factory 0>;
 };
