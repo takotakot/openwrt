@@ -822,8 +822,7 @@ define Device/wn-g300dgr
   BLOCKSIZE := 64k
   IMAGE_SIZE := 3456k
   DEVICE_TITLE := IODATA WN-G300DGR
-  DEVICE_PACKAGES := kmod-switch-rtl8366rb kmod-swconfig swconfig \
-    kmod-usb-core kmod-usb-dwc2
+  DEVICE_PACKAGES := kmod-switch-rtl8366rb kmod-usb-core kmod-usb-dwc2
 endef
 TARGET_DEVICES += wn-g300dgr
 
