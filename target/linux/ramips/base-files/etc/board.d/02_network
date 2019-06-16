@@ -597,7 +597,8 @@ ramips_setup_macs()
 		wan_mac=$(macaddr_add "$lan_mac" 1)
 		;;
 	iodata,wn-ac1167gr|\
-	iodata,wn-ac733gr3)
+	iodata,wn-ac733gr3|\
+	iodata,wn-g300dgr)
 		wan_mac=$(macaddr_add "$(mtd_get_mac_binary Factory 4)" -1)
 		;;
 	iodata,wn-ax1167gr|\
