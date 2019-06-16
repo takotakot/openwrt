@@ -136,17 +136,6 @@
 		};
 	};
 
-	gpio_export {
-		compatible = "gpio-export";
-		#size-cells = <0>;
-
-		usb-power {
-			gpio-export,name = "usb-power";
-			gpio-export,output = <1>;
-			gpios = <&gpio0 22 GPIO_ACTIVE_HIGH>;
-		};
-	};
-
 	rtl8366rb {
 		compatible = "realtek,rtl8366rb";
 		gpio-sda = <&gpio0 1 GPIO_ACTIVE_HIGH>;
@@ -171,6 +160,15 @@
 	mtd-mac-address = <&factory 0x4>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&rgmii_pins>;
+};
+
+&gpio0 {
+	usb_power {
+		gpio-hog;
+		gpios = <22 GPIO_ACTIVE_HIGH>;
+		output-high;
+		line-name = "usb-power";
+	};
 };
 
 &otg {
