@@ -34,7 +34,13 @@
 
 			partition@0 {
 				label = "u-boot";
-				reg = <0x0 0x30000>;
+				reg = <0x0 0x20000>;
+				read-only;
+			};
+
+			partition@20000 {
+				label = "backup";
+				reg = <0x20000 0x10000>;
 				read-only;
 			};
 
@@ -53,7 +59,19 @@
 			partition@50000 {
 				compatible = "denx,uimage";
 				label = "firmware";
-				reg = <0x50000 0x3b0000>;
+				reg = <0x50000 0x360000>;
+			};
+
+			partition@3b0000 {
+				label = "manufacture";
+				reg = <0x3b0000 0x40000>;
+				read-only;
+			};
+
+			partition@3f0000 {
+				label = "storage";
+				reg = <0x3f0000 0x10000>;
+				read-only;
 			};
 		};
 	};
