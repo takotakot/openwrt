@@ -11,8 +11,7 @@
 	compatible = "buffalo,wsr-2533dhp2", "mediatek,mt7622";
 
 	chosen {
-		stdout-path = "serial0:115200n8";
-		bootargs = "earlycon=uart8250,mmio32,0x11002000 swiotlb=512";
+		bootargs = "earlycon=uart8250,mmio32,0x11002000 console=ttyS0,115200n8 swiotlb=512";
 	};
 
 	aliases {
