@@ -123,10 +123,6 @@
 	status = "okay";
 };
 
-&pcie1 {
-	status = "okay";
-};
-
 &pio {
 	eth_pins: eth-pins {
 		mux {
