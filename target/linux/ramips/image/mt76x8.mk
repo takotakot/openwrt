@@ -6,6 +6,28 @@ include ./common-tp-link.mk
 
 DEFAULT_SOC := mt7628an
 
+define Build/elecom-header
+  $(eval product=$(word 1,$(1)))
+  $(eval model_id=$(word 2,$(1)))
+  ( \
+    echo -ne "ELECOM\x00\x00$(product)" | dd bs=40 count=1 conv=sync; \
+    echo -n "0.00" | dd bs=16 count=1 conv=sync; \
+  ) > $(KDIR)/tmp/$(DEVICE_NAME).header
+  ( \
+    echo -ne "\x03\x1d\x61\x29"; \
+    echo -ne "$$(printf '%08x' $$(stat -c%s $@) | fold -s2 | xargs -I {} echo \\x{} | tr -d '\n')"; \
+    echo -ne "\x06" | dd bs=4 count=1 conv=sync; \
+    model_id="$(model_id)"; \
+    echo -ne "\x$${model_id:0:2}\x$${model_id:2:2}\x$${model_id:4:2}\x$${model_id:6:2}" | \
+      dd bs=96 count=1 conv=sync; \
+    data_crc="$$(dd if=$@ | gzip -c | tail -c 8 | od -An -N4 -tx4 --endian little | tr -d ' \n')"; \
+    echo -ne "$$(echo $$data_crc | fold -s2 | xargs -I {} echo \\x{} | tr -d '\n')" | \
+      dd bs=8 count=1 conv=sync; \
+  ) >> $(KDIR)/tmp/$(DEVICE_NAME).header
+  cat $(KDIR)/tmp/$(DEVICE_NAME).header $@ >$@.new
+  mv $@.new $@
+endef
+
 define Device/alfa-network_awusfree1
   IMAGE_SIZE := 7872k
   DEVICE_VENDOR := ALFA Network
@@ -84,6 +106,19 @@ define Device/duzun_dm06
   SUPPORTED_DEVICES += duzun-dm06
 endef
 TARGET_DEVICES += duzun_dm06
+
+define Device/elecom_wrc-1167fs
+  IMAGE_SIZE := 7360k
+  DEVICE_VENDOR := ELECOM
+  DEVICE_MODEL := WRC-1167FS
+  BLOCKSIZE := 64k
+  IMAGES += factory.bin
+  IMAGE/factory.bin := \
+    $$(sysupgrade_bin) | pad-to $$$$(BLOCKSIZE) | check-size $$$$(IMAGE_SIZE) | \
+    xor-image -p 29944A25 -x | elecom-header WRC-1167FS 00228000
+  DEVICE_PACKAGES := kmod-mt76x2
+endef
+TARGET_DEVICES += elecom_wrc-1167fs
 
 define Device/glinet_gl-mt300n-v2
   IMAGE_SIZE := 16064k
