@@ -1,0 +1,144 @@
+diff --git a/drivers/net/ethernet/mediatek/mtk_eth_soc.c b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
+index c61069340f4f..7fe04e2687a9 100644
+--- a/drivers/net/ethernet/mediatek/mtk_eth_soc.c
++++ b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
+@@ -187,11 +187,10 @@ static void mtk_gmac0_rgmii_adjust(struct mtk_eth *eth, int speed)
+ 	mtk_w32(eth, val, TRGMII_TCK_CTRL);
+ }
+ 
+-static void mtk_mac_config(struct phylink_config *config, unsigned int mode,
++static void mtk_mac_config(struct net_device *ndev, unsigned int mode,
+ 			   const struct phylink_link_state *state)
+ {
+-	struct mtk_mac *mac = container_of(config, struct mtk_mac,
+-					   phylink_config);
++	struct mtk_mac *mac = netdev_priv(ndev);
+ 	struct mtk_eth *eth = mac->hw;
+ 	u32 mcr_cur, mcr_new, sid;
+ 	int val, ge_mode, err;
+@@ -360,11 +359,10 @@ static void mtk_mac_config(struct phylink_config *config, unsigned int mode,
+ 		mac->id, phy_modes(state->interface), err);
+ }
+ 
+-static int mtk_mac_link_state(struct phylink_config *config,
++static int mtk_mac_link_state(struct net_device *ndev,
+ 			      struct phylink_link_state *state)
+ {
+-	struct mtk_mac *mac = container_of(config, struct mtk_mac,
+-					   phylink_config);
++	struct mtk_mac *mac = netdev_priv(ndev);
+ 	u32 pmsr = mtk_r32(mac->hw, MTK_MAC_MSR(mac->id));
+ 
+ 	state->link = (pmsr & MAC_MSR_LINK);
+@@ -394,43 +392,50 @@ static int mtk_mac_link_state(struct phylink_config *config,
+ 	return 1;
+ }
+ 
+-static void mtk_mac_an_restart(struct phylink_config *config)
++static void mtk_mac_an_restart(struct net_device *ndev)
+ {
+-	struct mtk_mac *mac = container_of(config, struct mtk_mac,
+-					   phylink_config);
++	struct mtk_mac *mac = netdev_priv(ndev);
+ 
+ 	mtk_sgmii_restart_an(mac->hw, mac->id);
+ }
+ 
+-static void mtk_mac_link_down(struct phylink_config *config, unsigned int mode,
++static void mtk_mac_link_down(struct net_device *ndev, unsigned int mode,
+ 			      phy_interface_t interface)
+ {
+-	struct mtk_mac *mac = container_of(config, struct mtk_mac,
+-					   phylink_config);
++	struct mtk_mac *mac = netdev_priv(ndev);
+ 	u32 mcr = mtk_r32(mac->hw, MTK_MAC_MCR(mac->id));
+ 
+ 	mcr &= ~(MAC_MCR_TX_EN | MAC_MCR_RX_EN);
+ 	mtk_w32(mac->hw, mcr, MTK_MAC_MCR(mac->id));
+ }
+ 
+-static void mtk_mac_link_up(struct phylink_config *config, unsigned int mode,
++static void mtk_mac_link_up(struct net_device *ndev, unsigned int mode,
+ 			    phy_interface_t interface,
+ 			    struct phy_device *phy)
+ {
+-	struct mtk_mac *mac = container_of(config, struct mtk_mac,
+-					   phylink_config);
++	struct mtk_mac *mac = netdev_priv(ndev);
+ 	u32 mcr = mtk_r32(mac->hw, MTK_MAC_MCR(mac->id));
+ 
+ 	mcr |= MAC_MCR_TX_EN | MAC_MCR_RX_EN;
+ 	mtk_w32(mac->hw, mcr, MTK_MAC_MCR(mac->id));
+ }
+ 
+-static void mtk_validate(struct phylink_config *config,
++static inline void linkmode_zero(unsigned long *dst)
++{
++	bitmap_zero(dst, __ETHTOOL_LINK_MODE_MASK_NBITS);
++}
++
++static inline void linkmode_and(unsigned long *dst, const unsigned long *a,
++				const unsigned long *b)
++{
++	bitmap_and(dst, a, b, __ETHTOOL_LINK_MODE_MASK_NBITS);
++}
++
++static void mtk_validate(struct net_device *ndev,
+ 			 unsigned long *supported,
+ 			 struct phylink_link_state *state)
+ {
+-	struct mtk_mac *mac = container_of(config, struct mtk_mac,
+-					   phylink_config);
++	struct mtk_mac *mac = netdev_priv(ndev);
+ 	__ETHTOOL_DECLARE_LINK_MODE_MASK(mask) = { 0, };
+ 
+ 	if (state->interface != PHY_INTERFACE_MODE_NA &&
+@@ -1017,7 +1022,7 @@ static int mtk_tx_map(struct sk_buff *skb, struct net_device *dev,
+ 
+ 	if (MTK_HAS_CAPS(eth->soc->caps, MTK_QDMA)) {
+ 		if (netif_xmit_stopped(netdev_get_tx_queue(dev, 0)) ||
+-		    !netdev_xmit_more())
++		    !skb->xmit_more)
+ 			mtk_w32(eth, txd->txd2, MTK_QTX_CTX_PTR);
+ 	} else {
+ 		int next_idx = NEXT_DESP_IDX(txd_to_idx(ring, txd),
+@@ -2816,10 +2821,7 @@ static int mtk_add_mac(struct mtk_eth *eth, struct device_node *np)
+ 	mac->mode = MLO_AN_PHY;
+ 	mac->speed = SPEED_UNKNOWN;
+ 
+-	mac->phylink_config.dev = &eth->netdev[id]->dev;
+-	mac->phylink_config.type = PHYLINK_NETDEV;
+-
+-	phylink = phylink_create(&mac->phylink_config,
++	phylink = phylink_create(eth->netdev[id],
+ 				 of_fwnode_handle(mac->of_node),
+ 				 phy_mode, &mtk_phylink_ops);
+ 	if (IS_ERR(phylink)) {
+@@ -2853,6 +2855,15 @@ static int mtk_add_mac(struct mtk_eth *eth, struct device_node *np)
+ 	return err;
+ }
+ 
++static void __iomem *devm_platform_ioremap_resource(struct platform_device *pdev,
++					     unsigned int index)
++{
++	struct resource *res;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, index);
++	return devm_ioremap_resource(&pdev->dev, res);
++}
++
+ static int mtk_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *mac_np;
+diff --git a/drivers/net/ethernet/mediatek/mtk_eth_soc.h b/drivers/net/ethernet/mediatek/mtk_eth_soc.h
+index 76bd12cb8150..a7e38df0cfc9 100644
+--- a/drivers/net/ethernet/mediatek/mtk_eth_soc.h
++++ b/drivers/net/ethernet/mediatek/mtk_eth_soc.h
+@@ -902,7 +902,6 @@ struct mtk_mac {
+ 	int				speed;
+ 	struct device_node		*of_node;
+ 	struct phylink			*phylink;
+-	struct phylink_config		phylink_config;
+ 	struct mtk_eth			*hw;
+ 	struct mtk_hw_stats		*hw_stats;
+ 	__be32				hwlro_ip[MTK_MAX_LRO_IP_CNT];
