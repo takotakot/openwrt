@@ -1558,10 +1558,8 @@ int rtl8366_smi_probe_of(struct platform_device *pdev, struct rtl8366_smi *smi)
 		goto try_gpio;
 	}
 
-	of_property_read_u32(np, "phy_id", &smi->phy_id);
-	if(smi->phy_id < 0) {
+	if (of_property_read_u32(np, "phy_id", &smi->phy_id))
 		smi->phy_id = MDC_REALTEK_PHY_ADDR;
-	}
 
 	dev_info(&pdev->dev,
 		"switch phy addr=%d\n", smi->phy_id);
