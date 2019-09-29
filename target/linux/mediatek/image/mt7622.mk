@@ -38,7 +38,7 @@ define Device/buffalo_wsr-2533dhp2
   KERNEL_INITRAMFS = kernel-bin | lzma | \
     fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
     buffalo-initramfs-trx
-  DEVICE_PACKAGES := kmod-mt7615e kmod-switch-rtl8367b
+  DEVICE_PACKAGES := kmod-mt7615e kmod-switch-rtl8367b swconfig
 endef
 TARGET_DEVICES += buffalo_wsr-2533dhp2
 
