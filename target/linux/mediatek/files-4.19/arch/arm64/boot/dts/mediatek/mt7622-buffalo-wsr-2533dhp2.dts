@@ -106,6 +106,7 @@
 		compatible = "realtek,rtl8367b";
 		phy_id = <29>;
 		realtek,extif1 = <1 0 1 1 1 1 1 1 2>;
+		realtek,extif2 = <1 0 1 1 1 1 1 1 2>;
 		mii-bus = <&mdio>;
 	};
 /*	rtkgsw@0 {
