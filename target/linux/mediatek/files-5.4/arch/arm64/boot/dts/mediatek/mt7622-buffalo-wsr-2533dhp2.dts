@@ -268,9 +268,8 @@
 	gmac0: mac@0 {
 		compatible = "mediatek,eth-mac";
 		reg = <0>;
-		status = "disabled";
 
-		phy-mode = "rgmii";
+		phy-mode = "2500base-x";
 
 		mtd-mac-address = <&factory 0x4>;
 		mtd-mac-address-increment = <(-1)>;
@@ -285,6 +284,7 @@
 	gmac1: mac@1 {
 		compatible = "mediatek,eth-mac";
 		reg = <1>;
+		status = "disabled";
 
 		phy-mode = "rgmii";
 
