@@ -5,7 +5,8 @@ define Build/buffalo-initramfs-trx
 endef
 
 define Device/buffalo-wsr-2533dhp2
-  DEVICE_TITLE := Buffalo WSR-2533DHP2
+  DEVICE_VENDOR := Buffalo
+  DEVICE_MODEL := WSR-2533DHP2
   DEVICE_DTS := mt7622-buffalo-wsr-2533dhp2
   DEVICE_DTS_DIR := $(DTS_DIR)/mediatek
   BLOCK_SIZE := 128k
