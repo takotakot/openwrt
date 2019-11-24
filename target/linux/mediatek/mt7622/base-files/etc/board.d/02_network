@@ -9,6 +9,10 @@ mediatek_setup_interfaces()
 	local board="$1"
 
 	case $board in
+	buffalo,wsr-2533dhp2)
+		ucidef_add_switch "switch0" \
+			"0:lan" "1:lan" "2:lan" "3:lan" "4:wan" "5@eth0"
+		;;
 	esac
 }
 
