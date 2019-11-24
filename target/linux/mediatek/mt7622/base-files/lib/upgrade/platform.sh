@@ -25,6 +25,13 @@ platform_check_image() {
 	[ "$#" -gt 1 ] && return 1
 
 	case "$board" in
+	buffalo,wsr-2533dhp2)
+		[ "$magic" != "44485032" ] && {
+			echo "Invalid image type."
+			return 1
+		}
+		return 0
+		;;
 	*)
 		[ "$magic" != "d00dfeed" ] && {
 			echo "Invalid image type."

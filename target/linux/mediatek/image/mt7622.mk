@@ -1,9 +1,17 @@
 KERNEL_LOADADDR := 0x44080000
 
-define Build/buffalo-initramfs-trx
+define Build/buffalo-kernel-trx
 	$(STAGING_DIR_HOST)/bin/trx $(1) \
 		-o $@.new -f $@ -a 4
   mv $@.new $@
+endef
+
+define Build/trx
+	$(STAGING_DIR_HOST)/bin/trx $(1) \
+		-o $@ \
+		-m $$(($(subst k, * 1024,$(IMAGE_SIZE)))) \
+		-f $(IMAGE_KERNEL) \
+		-a 4 -f $(IMAGE_ROOTFS)
 endef
 
 define Device/bpi_bananapi-r64
@@ -33,11 +41,13 @@ define Device/buffalo_wsr-2533dhp2
   DEVICE_MODEL := WSR-2533DHP2
   DEVICE_DTS := mt7622-buffalo-wsr-2533dhp2
   DEVICE_DTS_DIR := $(DTS_DIR)/mediatek
-  BLOCK_SIZE := 128k
+  IMAGE_SIZE := 59392k
+  BLOCKSIZE := 128k
   PAGESIZE := 2048
   KERNEL_INITRAMFS = kernel-bin | lzma | \
-    fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
-    buffalo-initramfs-trx
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
+	buffalo-kernel-trx
+  IMAGE/sysupgrade.bin := trx -M 0x32504844 | pad-rootfs | append-metadata
   DEVICE_PACKAGES := kmod-mt7615e kmod-switch-rtl8367b swconfig
 endef
 TARGET_DEVICES += buffalo_wsr-2533dhp2

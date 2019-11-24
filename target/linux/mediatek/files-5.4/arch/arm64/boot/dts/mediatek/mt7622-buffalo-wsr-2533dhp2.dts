@@ -99,19 +99,27 @@
 	};
 
 	memory {
-		reg = <0 0x40000000 0 0x3F000000>;
+		reg = <0 0x40000000 0 0x0F000000>;
 	};
 
 	rtl8367s {
-		compatible = "realtek,rtl8367b";
-		realtek,extif1 = <1 0 1 1 1 1 1 1 2>;
+		compatible = "realtek,rtl8367s";
+		realtek,extif1 = <0 4 10 1 1 1 1 1 4>;
 		mii-bus = <&mdio>;
 	};
-/*	rtkgsw@0 {
-		compatible = "mediatek,rtk-gsw";
-		mediatek,ethsys = <&ethsys>;
-		mediatek,mdio = <&mdio>;
-	};*/
+
+	wmac@18000000 {
+		compatible = "mediatek,mt7622-wmac";
+		reg = <0 0x18000000 0 0x100000>;
+
+		interrupts = <GIC_SPI 211 IRQ_TYPE_LEVEL_LOW>;
+
+		mediatek,infracfg = <&infracfg>;
+
+		power-domains = <&scpsys MT7622_POWER_DOMAIN_WB>;
+
+		mediatek,mtd-eeprom = <&factory 0x0>;
+	};
 };
 
 &cpu0 {
@@ -135,7 +143,7 @@
 
 	wifi@0,0 {
 		compatible = "mediatek,mt76";
-		reg = <0x0000 0 0 0 1>;
+		reg = <0x0000 0 0 0 0>;
 		mediatek,mtd-eeprom = <&factory 0x5000>;
 		ieee80211-freq-limit = <5000000 6000000>;
 	};
@@ -149,26 +157,10 @@
 		};
 	};
 
-	i2c1_pins: i2c1-pins {
+	i2c0_pins: i2c0-pins {
 		mux {
 			function = "i2c";
-			groups =  "i2c1_0";
-		};
-	};
-
-	i2c2_pins: i2c2-pins {
-		mux {
-			function = "i2c";
-			groups =  "i2c2_0";
-		};
-	};
-
-	i2s1_pins: i2s1-pins {
-		mux {
-			function = "i2s";
-			groups =  "i2s_out_bclk_ws_mclk",
-				  "i2s1_in_data",
-				  "i2s1_out_data";
+			groups =  "i2c0";
 		};
 	};
 
@@ -275,24 +267,7 @@
 		mtd-mac-address-increment = <(-1)>;
 
 		fixed-link {
-			speed = <1000>;
-			full-duplex;
-			pause;
-		};
-	};
-
-	gmac1: mac@1 {
-		compatible = "mediatek,eth-mac";
-		reg = <1>;
-		status = "disabled";
-
-		phy-mode = "rgmii";
-
-		mtd-mac-address = <&factory 0x4>;
-		mtd-mac-address-increment = <(-1)>;
-
-		fixed-link {
-			speed = <1000>;
+			speed = <2500>;
 			full-duplex;
 			pause;
 		};
@@ -304,15 +279,17 @@
 	};
 };
 
-&i2c1 {
+&i2c0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&i2c1_pins>;
+	pinctrl-0 = <&i2c0_pins>;
+	status = "okay";
+};
+
+&i2c1 {
 	status = "okay";
 };
 
 &i2c2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2c2_pins>;
 	status = "okay";
 };
 
