@@ -152,22 +152,20 @@
 	};
 };
 
-&pinctrl {
-	state_default: pinctrl0 {
-		gpio {
-			ralink,group = "wled_an", "wdt", "refclk", "i2c", "i2s";
-			ralink,function = "gpio";
-		};
+&state_default {
+	gpio {
+		ralink,group = "wled_an", "wdt", "refclk", "i2c", "i2s";
+		ralink,function = "gpio";
+	};
 
-		p3led_an {
-			ralink,group = "p3led_an";
-			ralink,function = "p3led_an";
-		};
+	p3led_an {
+		ralink,group = "p3led_an";
+		ralink,function = "p3led_an";
+	};
 
-		p4led_an {
-			ralink,group = "p4led_an";
-			ralink,function = "p4led_an";
-		};
+	p4led_an {
+		ralink,group = "p4led_an";
+		ralink,function = "p4led_an";
 	};
 };
 
