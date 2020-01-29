@@ -4,7 +4,7 @@ define Build/buffalo-initramfs-trx
   mv $@.new $@
 endef
 
-define Device/buffalo-wsr-2533dhp2
+define Device/buffalo_wsr-2533dhp2
   DEVICE_VENDOR := Buffalo
   DEVICE_MODEL := WSR-2533DHP2
   DEVICE_DTS := mt7622-buffalo-wsr-2533dhp2
@@ -16,7 +16,7 @@ define Device/buffalo-wsr-2533dhp2
     buffalo-initramfs-trx
   DEVICE_PACKAGES := kmod-mt7615e
 endef
-TARGET_DEVICES += buffalo-wsr-2533dhp2
+TARGET_DEVICES += buffalo_wsr-2533dhp2
 
 define Device/mediatek_mt7622-rfb1
   DEVICE_VENDOR := MediaTek
