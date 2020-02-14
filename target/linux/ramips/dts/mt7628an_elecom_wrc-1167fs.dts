@@ -126,11 +126,11 @@
 &ehci {
 	status = "disabled";
 };
-
+/*
 &esw {
 	mediatek,portmap = <0x2f>;
 	mediatek,portdisable = <0x27>;
-};
+};*/
 
 &ethernet {
 	mtd-mac-address = <&factory 0x28>;
