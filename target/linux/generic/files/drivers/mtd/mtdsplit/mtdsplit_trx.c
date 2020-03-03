@@ -21,7 +21,8 @@
 
 #include "mtdsplit.h"
 
-#define TRX_MAGIC   0x30524448  /* "HDR0" */
+#define TRX_MAGIC       0x30524448  /* "HDR0" */
+#define BUF_TRX_MAGIC   0x32504844  /* "DHP2" */
 
 struct trx_header {
 	__le32 magic;
@@ -83,7 +84,8 @@ mtdsplit_parse_trx(struct mtd_info *master,
 		if (ret)
 			continue;
 
-		if (hdr.magic != cpu_to_le32(TRX_MAGIC)) {
+		if (hdr.magic != cpu_to_le32(TRX_MAGIC)
+			&& hdr.magic != cpu_to_le32(BUF_TRX_MAGIC)) {
 			pr_debug("no valid trx header found in \"%s\" at offset %llx\n",
 				 master->name, (unsigned long long) offset);
 			continue;
