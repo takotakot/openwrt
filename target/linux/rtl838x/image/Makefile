@@ -12,12 +12,10 @@ DEVICE_VARS += IMAGE_SIZE
 KERNEL_LOADADDR = 0x80000000
 KERNEL_ENTRY = 0x80000400
 
-#KERNEL_DTB = kernel-bin | append-dtb | gzip
 define Device/Default
   PROFILES = Default
   KERNEL := kernel-bin | append-dtb | gzip | uImage gzip
   KERNEL_INITRAMFS := kernel-bin | append-dtb | gzip | uImage gzip
-#  KERNEL := kernel-bin | gzip | uImage gzip
   DEVICE_DTS_DIR := ../dts
   DEVICE_DTS = $$(SOC)_$(1)
   IMAGES := sysupgrade.bin
@@ -32,8 +30,6 @@ define Device/d-link_dgs-1210-16
   IMAGE_SIZE := 7936k
   DEVICE_VENDOR := D-Link
   DEVICE_MODEL := DGS-1210-16
-  DEVICE_PACKAGES:= kmod-usb2 kmod-usb-ohci
-  SUPPORTED_DEVICES += dgs-1210-16
 endef
 TARGET_DEVICES += d-link_dgs-1210-16
 
@@ -42,8 +38,6 @@ define Device/tp-link_t2500g-10ts
   IMAGE_SIZE := 7936k
   DEVICE_VENDOR := TP-Link
   DEVICE_MODEL := T2500G-10TS
-  DEVICE_PACKAGES:= kmod-usb2 kmod-usb-ohci
-  SUPPORTED_DEVICES += t2500g-10ts
 endef
 TARGET_DEVICES += tp-link_t2500g-10ts
 
@@ -52,8 +46,6 @@ define Device/zyxel_gs1900-10hp
   IMAGE_SIZE := 7936k
   DEVICE_VENDOR := Zyxel
   DEVICE_MODEL := GS1900-10HP
-  DEVICE_PACKAGES:= kmod-usb2 kmod-usb-ohci
-  SUPPORTED_DEVICES += gs1900-10hp
 endef
 TARGET_DEVICES += zyxel_gs1900-10hp
 
