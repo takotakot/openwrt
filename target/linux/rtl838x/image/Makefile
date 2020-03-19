@@ -7,8 +7,6 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 
-DEVICE_VARS += IMAGE_SIZE 
-
 KERNEL_LOADADDR = 0x80000000
 KERNEL_ENTRY = 0x80000400
 
