@@ -19,7 +19,7 @@ define Device/Default
   KERNEL_INITRAMFS := kernel-bin | append-dtb | gzip | uImage gzip
 #  KERNEL := kernel-bin | gzip | uImage gzip
   DEVICE_DTS_DIR := ../dts
-  DEVICE_DTS = $(1)
+  DEVICE_DTS = $$(SOC)_$(1)
   IMAGES := sysupgrade.bin
   SUPPORTED_DEVICES := $(subst _,$(comma),$(1))
   sysupgrade_bin := append-kernel | append-rootfs | pad-rootfs
@@ -40,7 +40,7 @@ endef
 
 
 define Device/zyxel_gs1900-10hp
-  SOC := rtl838x
+  SOC := rtl8380
   IMAGE_SIZE := 7936k
   DEVICE_VENDOR := Zyxel
   DEVICE_MODEL := GS1900-10HP
