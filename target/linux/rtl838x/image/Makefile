@@ -39,16 +39,6 @@ define Build/elecom-header
 endef
 
 
-define Device/zyxel_gs1900-10hp
-  SOC := rtl8380
-  IMAGE_SIZE := 7936k
-  DEVICE_VENDOR := Zyxel
-  DEVICE_MODEL := GS1900-10HP
-  DEVICE_PACKAGES:= kmod-usb2 kmod-usb-ohci
-  SUPPORTED_DEVICES += gs1900-10hp
-endef
-TARGET_DEVICES += zyxel_gs1900-10hp
-
 define Device/d-link_dgs-1210-16
   SOC := rtl838x
   IMAGE_SIZE := 7936k
@@ -68,6 +58,16 @@ define Device/tp-link_t2500g-10ts
   SUPPORTED_DEVICES += t2500g-10ts
 endef
 TARGET_DEVICES += tp-link_t2500g-10ts
+
+define Device/zyxel_gs1900-10hp
+  SOC := rtl8380
+  IMAGE_SIZE := 7936k
+  DEVICE_VENDOR := Zyxel
+  DEVICE_MODEL := GS1900-10HP
+  DEVICE_PACKAGES:= kmod-usb2 kmod-usb-ohci
+  SUPPORTED_DEVICES += gs1900-10hp
+endef
+TARGET_DEVICES += zyxel_gs1900-10hp
 
 
 
