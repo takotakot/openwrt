@@ -31,6 +31,14 @@ define Device/d-link_dgs-1210-16
 endef
 TARGET_DEVICES += d-link_dgs-1210-16
 
+define Device/inaba_aml2-17gp
+  SOC := rtl8382
+  IMAGE_SIZE := 13504k
+  DEVICE_VENDOR := INABA
+  DEVICE_MODEL := Abaniact AML2-17GP
+endef
+TARGET_DEVICES += inaba_aml2-17gp
+
 define Device/tp-link_t2500g-10ts
   SOC := rtl838x
   IMAGE_SIZE := 7936k
