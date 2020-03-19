@@ -47,6 +47,4 @@ define Device/zyxel_gs1900-10hp
 endef
 TARGET_DEVICES += zyxel_gs1900-10hp
 
-
-
 $(eval $(call BuildImage))
