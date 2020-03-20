@@ -42,6 +42,36 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 	};
+
+	uart0: uart@b8002000 {
+		compatible = "ns16550a";
+		reg = <0xb8002000 0x100>;
+
+		clock-frequency = <200000000>;
+		interrupt-parent = <&cpuintc>;
+		interrupts = <39>;
+
+		reg-shift = <2>;
+		fifo-size = <1>;
+		no-loopback-test;
+
+		status = "disabled";
+	};
+
+	uart1: uart@b8002100 {
+		compatible = "ns16550a";
+		reg = <0xb8002100 0x100>;
+
+		clock-frequency = <200000000>;
+		interrupt-parent = <&cpuintc>;
+		interrupts = <38>;
+
+		reg-shift = <2>;
+		fifo-size = <1>;
+		no-loopback-test;
+
+		status = "disabled";
+	};
 	
 	ethernet0: ethernet@0xbb000000 {
 		status = "okay";
