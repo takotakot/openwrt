@@ -948,8 +948,7 @@ static int rtl838x_port_enable(struct dsa_switch *ds, int port,
 	return 0;
 }
 
-static void rtl838x_port_disable(struct dsa_switch *ds, int port,
-				 struct phy_device *phydev)
+static void rtl838x_port_disable(struct dsa_switch *ds, int port)
 {
 	int bit;
 	struct rtl838x_priv *priv = ds->priv;
