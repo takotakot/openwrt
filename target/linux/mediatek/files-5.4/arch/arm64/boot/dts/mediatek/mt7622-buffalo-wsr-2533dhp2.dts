@@ -261,7 +261,7 @@
 		compatible = "mediatek,eth-mac";
 		reg = <0>;
 
-		phy-mode = "2500base-x";
+		phy-connection-type = "2500base-x";
 
 		mtd-mac-address = <&factory 0x4>;
 		mtd-mac-address-increment = <(-1)>;
