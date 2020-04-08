@@ -107,19 +107,6 @@
 		realtek,extif1 = <0 4 10 1 1 1 1 1 4>;
 		mii-bus = <&mdio>;
 	};
-
-	wmac@18000000 {
-		compatible = "mediatek,mt7622-wmac";
-		reg = <0 0x18000000 0 0x100000>;
-
-		interrupts = <GIC_SPI 211 IRQ_TYPE_LEVEL_LOW>;
-
-		mediatek,infracfg = <&infracfg>;
-
-		power-domains = <&scpsys MT7622_POWER_DOMAIN_WB>;
-
-		mediatek,mtd-eeprom = <&factory 0x0>;
-	};
 };
 
 &cpu0 {
@@ -385,4 +372,10 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&watchdog_pins>;
 	status = "okay";
+};
+
+&wmac {
+	status = "okay";
+
+	mediatek,mtd-eeprom = <&factory 0x0>;
 };
