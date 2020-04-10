@@ -229,6 +229,13 @@
 			groups = "watchdog";
 		};
 	};
+
+	rtl8367s_reset {
+		gpio-hog;
+		gpios = <54 GPIO_ACTIVE_HIGH>;
+		output-high;
+		line-name = "rtl8367s-reset";
+	};
 };
 
 &auxadc {
