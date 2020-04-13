@@ -22,34 +22,34 @@
 
 		led_power: power {
 			label = "wrc-1167fs:green:power";
-			gpios = <&gpio0 0 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 0 GPIO_ACTIVE_LOW>;
 		};
 
 		wlan5g {
 			label = "wrc-1167fs:green:wlan5g";
-			gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 2 GPIO_ACTIVE_LOW>;
 			linux,default-trigger = "phy1radio";
 		};
 
 		wps {
 			label = "wrc-1167fs:red:wps";
-			gpios = <&gpio1 5 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 37 GPIO_ACTIVE_LOW>;
 		};
 
 		wlan2g {
 			label = "wrc-1167fs:green:wlan2g";
-			gpios = <&gpio1 12 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 44 GPIO_ACTIVE_LOW>;
 			linux,default-trigger = "phy0radio";
 		};
 
 /*		internet {
 			label = "wrc-1167fs:green:internet";
-			gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 39 GPIO_ACTIVE_LOW>;
 		};
 
 		lan {
 			label = "wrc-1167fs:green:lan";
-			gpios = <&gpio1 8 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 40 GPIO_ACTIVE_LOW>;
 		};*/
 	};
 
@@ -58,20 +58,20 @@
 
 		ap {
 			label = "ap";
-			gpios = <&gpio0 4 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 4 GPIO_ACTIVE_LOW>;
 			linux,code = <BTN_0>;
 			linux,input-type = <EV_SW>;
 		};
 
 		reset {
 			label = "reset";
-			gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 5 GPIO_ACTIVE_LOW>;
 			linux,code = <KEY_RESTART>;
 		};
 
 		wps {
 			label = "wps";
-			gpios = <&gpio1 6 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 38 GPIO_ACTIVE_LOW>;
 			linux,code = <KEY_WPS_BUTTON>;
 		};
 	};
@@ -154,18 +154,18 @@
 
 &state_default {
 	gpio {
-		ralink,group = "wled_an", "wdt", "refclk", "i2c", "i2s";
-		ralink,function = "gpio";
+		groups = "wled_an", "wdt", "refclk", "i2c", "i2s";
+		function = "gpio";
 	};
 
 	p3led_an {
-		ralink,group = "p3led_an";
-		ralink,function = "p3led_an";
+		groups = "p3led_an";
+		function = "p3led_an";
 	};
 
 	p4led_an {
-		ralink,group = "p4led_an";
-		ralink,function = "p4led_an";
+		groups = "p4led_an";
+		function = "p4led_an";
 	};
 };
 
