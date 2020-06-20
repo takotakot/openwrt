@@ -283,6 +283,18 @@ define Device/elecom_wrc-1167ghbk2-s
 endef
 TARGET_DEVICES += elecom_wrc-1167ghbk2-s
 
+define Device/elecom_wrc-1167gst2
+  $(Device/uimage-lzma-loader)
+  IMAGE_SIZE := 24576k
+  DEVICE_VENDOR := ELECOM
+  DEVICE_MODEL := WRC-1167GST2
+  IMAGES += factory.bin
+  IMAGE/factory.bin := $$(sysupgrade_bin) | check-size | \
+	elecom-gst-factory WRC-1167GST2 0.00
+  DEVICE_PACKAGES := kmod-mt7615e kmod-mt7615-firmware wpad-basic
+endef
+TARGET_DEVICES += elecom_wrc-1167gst2
+
 define Device/elecom_wrc-1900gst
   $(Device/uimage-lzma-loader)
   IMAGE_SIZE := 11264k
