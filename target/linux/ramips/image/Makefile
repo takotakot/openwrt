@@ -26,11 +26,6 @@ LOADER_PLATFORM := $(ldrplatform-y)
 
 KERNEL_DTB = kernel-bin | append-dtb | lzma
 
-define Build/edimax-header
-	$(STAGING_DIR_HOST)/bin/mkedimaximg -i $@ -o $@.new $(1)
-	@mv $@.new $@
-endef
-
 define Build/elx-header
 	$(eval hw_id=$(word 1,$(1)))
 	$(eval xor_pattern=$(word 2,$(1)))
