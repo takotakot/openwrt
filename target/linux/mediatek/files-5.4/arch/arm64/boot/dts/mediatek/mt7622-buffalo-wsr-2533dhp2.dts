@@ -78,7 +78,7 @@
 			linux,input-type = <EV_SW>;
 		};
 
-		wb {
+		bridge {
 			label = "wb";
 			gpios = <&pio 16 GPIO_ACTIVE_LOW>;
 			linux,code = <BTN_0>;
