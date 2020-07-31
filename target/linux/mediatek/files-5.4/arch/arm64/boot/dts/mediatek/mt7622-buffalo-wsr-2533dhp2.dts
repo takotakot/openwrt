@@ -28,8 +28,6 @@
 
 	leds {
 		compatible = "gpio-leds";
-		pinctrl-names = "default";
-		pinctrl-0 = <&led_pins>;
 
 		wireless_amber {
 			label = "wsr-2533dhp2:amber:wireless";
@@ -143,20 +141,6 @@
 		};
 	};
 
-	i2c0_pins: i2c0-pins {
-		mux {
-			function = "i2c";
-			groups =  "i2c0";
-		};
-	};
-
-	led_pins: led-pins {
-		mux {
-			pins = "I2S2_OUT", "I2S3_OUT";
-			drive-strength = <16>;
-		};
-	};
-
 	/* Parallel nand is shared pin with eMMC */
 	parallel_nand_pins: parallel-nand-pins {
 		mux {
@@ -185,15 +169,6 @@
 		};
 	};
 
-	pcie1_pins: pcie1-pins {
-		mux {
-			function = "pcie";
-			groups = "pcie1_pad_perst",
-				 "pcie1_0_waken",
-				 "pcie1_0_clkreq";
-		};
-	};
-
 	pmic_bus_pins: pmic-bus-pins {
 		mux {
 			function = "pmic";
@@ -205,13 +180,6 @@
 		mux {
 			function = "pwm";
 			groups = "pwm_ch7_2";
-		};
-	};
-
-	wled_pins: wled-pins {
-		mux {
-			function = "led";
-			groups = "wled";
 		};
 	};
 
@@ -235,10 +203,6 @@
 		output-high;
 		line-name = "rtl8367s-reset";
 	};
-};
-
-&auxadc {
-	status = "okay";
 };
 
 &bch {
@@ -270,20 +234,6 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 	};
-};
-
-&i2c0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2c0_pins>;
-	status = "okay";
-};
-
-&i2c1 {
-	status = "okay";
-};
-
-&i2c2 {
-	status = "okay";
 };
 
 &nandc {
