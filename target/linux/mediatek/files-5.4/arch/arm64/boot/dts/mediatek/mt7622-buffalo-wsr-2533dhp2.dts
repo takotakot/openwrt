@@ -116,13 +116,13 @@
 	sram-supply = <&mt6380_vm_reg>;
 };
 
-&pcie {
+&pcie0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pcie0_pins>;
 	status = "okay";
 };
 
-&pcie0 {
+&slot0 {
 	status = "okay";
 
 	wifi@0,0 {
